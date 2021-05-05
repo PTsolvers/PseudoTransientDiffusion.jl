@@ -4,6 +4,8 @@ This repository contains various diffusion solvers to examplify, test and asses 
 
 🚧 work in progress - more to come soon.
 
+💡 Link to the [Overleaf draft](https://www.overleaf.com/project/5ff83a57858b372f63143b8e)
+
 ## Content
 * [References](#references)
 * [The diffusion equation](#the-diffusion-equation)
