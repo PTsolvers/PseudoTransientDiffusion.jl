@@ -8,19 +8,18 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-@parallel function compute_flux!(qHx, H, D, dx)
-    @all(qHx) = -D*@d(H)/dx
+@parallel function compute_flux!(qHx, H, D, dtauq, dx)
+    @all(qHx) = (@all(qHx) - dtauq*@d(H)/dx)/(1.0 + dtauq/D)
     return
 end
 
-@parallel function compute_rate!(ResH, dHdt, H, Hold, qHx, dt, damp, dx)
-    @all(ResH) = -(@inn(H) - @inn(Hold))/dt -@d(qHx)/dx
-    @all(dHdt) = @all(ResH) + damp*@all(dHdt)
+@parallel function compute_update!(H, Hold, qHx, dtauH, dt, dx)
+    @inn(H) = (@inn(H) + dtauH*(@inn(Hold)/dt - @d(qHx)/dx))/(1.0 + dtauH/dt)
     return
 end
 
-@parallel function compute_update!(H, dHdt, dtau)
-    @inn(H) = @inn(H) + dtau*@all(dHdt)
+@parallel function check_res!(ResH, H, Hold, qHx, dt, dx)
+    @inn(ResH) = -(@inn(H)-@inn(Hold))/dt - @d(qHx)/dx
     return
 end
 
@@ -37,11 +36,14 @@ end
     damp   = 1-28/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx     = lx/nx      # grid size
-    dtau   = (1.0/(dx^2/D/2.1) + 1.0/dt)^-1 # iterative timestep
+    dmp    = 3.0
+    CFLdx  = 0.7*dx
+    Re_opt = π + sqrt(π^2 + (lx/D)^2)
+    dtauq  = dmp*CFLdx*lx/Re_opt
+    dtauH  = CFLdx^2/dtauq # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
     xc     = LinRange(dx/2, lx-dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
-    dHdt   = @zeros(nx-2)
     ResH   = @zeros(nx-2)
     # Initial condition
     H0     = Data.Array( exp.(-(xc.-lx/2).^2) )
@@ -53,9 +55,9 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, H, D, dx)
-            @parallel compute_rate!(ResH, dHdt, H, Hold, qHx, dt, damp, dx)
-            @parallel compute_update!(H, dHdt, dtau)
+            @parallel compute_flux!(qHx, H, D, dtauq, dx)
+            @parallel compute_update!(H, Hold, qHx, dtauH, dt, dx)
+            @parallel check_res!(ResH, H, Hold, qHx, dt, dx)
             iter += 1; err = norm(ResH)/length(ResH)
         end
         ittot += iter; it += 1; t += dt

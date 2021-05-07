@@ -9,7 +9,7 @@ end
 using Plots, Printf, LinearAlgebra
 
 macro H3() esc(:( @av(H)*@av(H)*@av(H) )) end
-@parallel function compute_flux!(qHx, H, D, dx)
+@parallel function compute_flux!(qHx, H, dx)
     @all(qHx) = -@H3()*@d(H)/dx
     return
 end
@@ -29,14 +29,13 @@ end
 @views function diffusion_1D()
     # Physics
     lx     = 10.0       # domain size
-    D      = 1.0        # diffusion coefficient
     ttot   = 1.0        # total simulation time
     dt     = 0.2        # physical time step
     # Numerics
-    nx     = 256        # numerical grid resolution
+    nx     = 2*256        # numerical grid resolution
     tol    = 1e-6       # tolerance
     itMax  = 1e5        # max number of iterations
-    damp   = 1-45/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
+    damp   = 1-44/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx     = lx/nx      # grid size
     xc     = LinRange(dx/2, lx-dx/2, nx)
@@ -54,7 +53,7 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, H, D, dx)
+            @parallel compute_flux!(qHx, H, dx)
             @parallel compute_rate!(ResH, dHdt, H, Hold, qHx, dt, damp, dx)
             @parallel compute_update!(H, dHdt, dt, dx)
             iter += 1; err = norm(ResH)/length(ResH)

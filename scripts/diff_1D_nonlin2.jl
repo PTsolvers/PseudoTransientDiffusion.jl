@@ -8,40 +8,43 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-@parallel function compute_flux!(qHx, H, D, dx)
-    @all(qHx) = -D*@d(H)/dx
+macro H3()     esc(:( @av(H)*@av(H)*@av(H)         )) end
+macro Re_opt() esc(:( π + sqrt(π^2 + (lx/@H3())^2) )) end
+macro dtauq()  esc(:( dmp*CFLdx*lx/@Re_opt()       )) end
+macro dtauH()  esc(:( CFLdx^2/@dtauq()             )) end # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
+
+@parallel function compute_flux!(qHx, H, dmp, CFLdx, lx, dx)
+    @all(qHx) = (@all(qHx) - @dtauq()*@d(H)/dx)/(1.0 + @dtauq()/@H3())
     return
 end
 
-@parallel function compute_rate!(ResH, dHdt, H, Hold, qHx, dt, damp, dx)
-    @all(ResH) = -(@inn(H) - @inn(Hold))/dt -@d(qHx)/dx
-    @all(dHdt) = @all(ResH) + damp*@all(dHdt)
+@parallel function compute_update!(H, Hold, qHx, dt, dmp, CFLdx, lx, dx)
+    @inn(H) = (@inn(H) + @dtauH()*(@inn(Hold)/dt - @d(qHx)/dx))/(1.0 + @dtauH()/dt)
     return
 end
 
-@parallel function compute_update!(H, dHdt, dtau)
-    @inn(H) = @inn(H) + dtau*@all(dHdt)
+@parallel function check_res!(ResH, H, Hold, qHx, dt, dx)
+    @inn(ResH) = -(@inn(H)-@inn(Hold))/dt - @d(qHx)/dx
     return
 end
 
 @views function diffusion_1D()
     # Physics
     lx     = 10.0       # domain size
-    D      = 1.0        # diffusion coefficient
     ttot   = 1.0        # total simulation time
     dt     = 0.2        # physical time step
     # Numerics
-    nx     = 2*256        # numerical grid resolution
+    nx     = 2*256      # numerical grid resolution
     tol    = 1e-6       # tolerance
     itMax  = 1e5        # max number of iterations
     damp   = 1-28/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx     = lx/nx      # grid size
-    dtau   = (1.0/(dx^2/D/2.1) + 1.0/dt)^-1 # iterative timestep
+    dmp    = 3.0
+    CFLdx  = 0.7*dx
     xc     = LinRange(dx/2, lx-dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
-    dHdt   = @zeros(nx-2)
     ResH   = @zeros(nx-2)
     # Initial condition
     H0     = Data.Array( exp.(-(xc.-lx/2).^2) )
@@ -53,9 +56,9 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, H, D, dx)
-            @parallel compute_rate!(ResH, dHdt, H, Hold, qHx, dt, damp, dx)
-            @parallel compute_update!(H, dHdt, dtau)
+            @parallel compute_flux!(qHx, H, dmp, CFLdx, lx, dx)
+            @parallel compute_update!(H, Hold, qHx, dt, dmp, CFLdx, lx, dx)
+            @parallel check_res!(ResH, H, Hold, qHx, dt, dx)
             iter += 1; err = norm(ResH)/length(ResH)
         end
         ittot += iter; it += 1; t += dt
@@ -63,7 +66,7 @@ end
     end
     # Analytic solution
     Hana = 1/sqrt(4*(ttot+1/4)) * exp.(-(xc.-lx/2).^2 /(4*(ttot+1/4)))
-    @printf("Total time = %1.2f, time steps = %d, iterations tot = %d, error vs analytic = %1.2e \n", round(ttot, sigdigits=2), it, ittot, norm(Array(H)-Hana))
+    @printf("Total time = %1.2f, time steps = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, ittot)
     # Visualise
     plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion (nt=$it, iters=$ittot)"))
     return
