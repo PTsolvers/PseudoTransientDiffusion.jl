@@ -8,8 +8,14 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
+@parallel function compute_dtau!(dtau, D, dt, dx)
+    # @inn(dtau) = 1.0./(1.0./(dx^2 ./@inn(D)/2.1) .+ 1.0/dt)
+    @inn(dtau) = 1.0./(1.0./(dx^2 ./@maxloc(D)/2.1) .+ 1.0/dt)
+    return
+end
+
 @parallel function compute_flux!(qHx, H, D, dx)
-    @all(qHx) = -D*@d(H)/dx
+    @all(qHx) = -@all(D)*@d(H)/dx
     return
 end
 
@@ -20,14 +26,15 @@ end
 end
 
 @parallel function compute_update!(H, dHdt, dtau)
-    @inn(H) = @inn(H) + dtau*@all(dHdt)
+    @inn(H) = @inn(H) + @all(dtau)*@all(dHdt)
     return
 end
 
 @views function diffusion_1D(; nx=512, do_viz=false)
     # Physics
     lx     = 10.0       # domain size
-    D      = 1.0        # diffusion coefficient
+    D1     = 1          # diffusion coefficient
+    D2     = 1e-4       # diffusion coefficient
     ttot   = 1.0        # total simulation time
     dt     = 0.2        # physical time step
     # Numerics
@@ -37,16 +44,20 @@ end
     damp   = 1-28/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx     = lx/nx      # grid size
-    dtau   = (1.0/(dx^2/D/2.1) + 1.0/dt)^-1 # iterative timestep
     xc     = LinRange(dx/2, lx-dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
     dHdt   = @zeros(nx-2)
     ResH   = @zeros(nx-2)
+    dtau   = @zeros(nx-1)
     # Initial condition
+    D      = D2*@ones(nx-1)
+    D[1:Int(ceil(nx/2))] .= D1
     H0     = Data.Array( exp.(-(xc.-lx/2).^2) )
     Hold   = @ones(nx).*H0
     H      = @ones(nx).*H0
+    @parallel compute_dtau!(dtau, D, dt, dx)
+    dtau[1] = dtau[2]; dtau[end] = dtau[end-1]
     t = 0.0; it = 0; ittot = 0
     # Physical time loop
     while t<ttot
@@ -61,9 +72,7 @@ end
         ittot += iter; it += 1; t += dt
         Hold .= H
     end
-    # Analytic solution
-    Hana = 1/sqrt(4*(ttot+1/4)) * exp.(-(xc.-lx/2).^2 /(4*(ttot+1/4)))
-    @printf("Total time = %1.2f, time steps = %d, iterations tot = %d, error vs analytic = %1.2e \n", round(ttot, sigdigits=2), it, ittot, norm(Array(H)-Hana))
+    @printf("Total time = %1.2f, time steps = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, ittot)
     # Visualise
     if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion (nt=$it, iters=$ittot)")) end
     return nx, ittot

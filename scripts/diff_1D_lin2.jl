@@ -23,17 +23,16 @@ end
     return
 end
 
-@views function diffusion_1D()
+@views function diffusion_1D(; nx=512, do_viz=false)
     # Physics
     lx     = 10.0       # domain size
     D      = 1.0        # diffusion coefficient
     ttot   = 1.0        # total simulation time
     dt     = 0.2        # physical time step
     # Numerics
-    nx     = 2*256        # numerical grid resolution
+    # nx     = 2*256      # numerical grid resolution
     tol    = 1e-6       # tolerance
     itMax  = 1e5        # max number of iterations
-    damp   = 1-28/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx     = lx/nx      # grid size
     dmp    = 3.0
@@ -67,8 +66,8 @@ end
     Hana = 1/sqrt(4*(ttot+1/4)) * exp.(-(xc.-lx/2).^2 /(4*(ttot+1/4)))
     @printf("Total time = %1.2f, time steps = %d, iterations tot = %d, error vs analytic = %1.2e \n", round(ttot, sigdigits=2), it, ittot, norm(Array(H)-Hana))
     # Visualise
-    plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion (nt=$it, iters=$ittot)"))
-    return
+    if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion (nt=$it, iters=$ittot)")) end
+    return nx, ittot
 end
 
-diffusion_1D()
+# diffusion_1D(; )

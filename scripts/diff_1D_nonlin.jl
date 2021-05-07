@@ -26,13 +26,13 @@ macro dtau() esc(:( 1.0/(1.0/(dx*dx/@H3()/2.1) + 1.0/dt) )) end
     return
 end
 
-@views function diffusion_1D()
+@views function diffusion_1D(; nx=512, do_viz=false)
     # Physics
     lx     = 10.0       # domain size
     ttot   = 1.0        # total simulation time
     dt     = 0.2        # physical time step
     # Numerics
-    nx     = 2*256        # numerical grid resolution
+    # nx     = 2*256        # numerical grid resolution
     tol    = 1e-6       # tolerance
     itMax  = 1e5        # max number of iterations
     damp   = 1-44/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
@@ -63,8 +63,8 @@ end
     end
     @printf("Total time = %1.2f, time steps = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, ittot)
     # Visualise
-    plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="nonlinear diffusion (nt=$it, iters=$ittot)"))
-    return
+    if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="nonlinear diffusion (nt=$it, iters=$ittot)")) end
+    return nx, ittot
 end
 
-diffusion_1D()
+# diffusion_1D(; )

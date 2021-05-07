@@ -8,18 +8,22 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-macro H3()     esc(:( @av(H)*@av(H)*@av(H)         )) end
-macro Re_opt() esc(:( π + sqrt(π^2 + (lx/@H3())^2) )) end
-macro dtauq()  esc(:( dmp*CFLdx*lx/@Re_opt()       )) end
-macro dtauH()  esc(:( CFLdx^2/@dtauq()             )) end # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
-
-@parallel function compute_flux!(qHx, H, dmp, CFLdx, lx, dx)
-    @all(qHx) = (@all(qHx) - @dtauq()*@d(H)/dx)/(1.0 + @dtauq()/@H3())
+@parallel function compute_dtau!(Re_opt, dtauq, dtauH, D, lx, dmp, CFLdx, dx)
+    @inn(Re_opt) = π + sqrt(π^2 + (lx/@inn(D))^2)
+    # @inn(Re_opt) = π + sqrt(π^2 + (lx/@maxloc(D))^2)
+    @inn(dtauq)  = dmp*CFLdx*lx/@inn(Re_opt)
+    @inn(dtauH)  = CFLdx^2/@inn(dtauq) # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
     return
 end
 
-@parallel function compute_update!(H, Hold, qHx, dt, dmp, CFLdx, lx, dx)
-    @inn(H) = (@inn(H) + @dtauH()*(@inn(Hold)/dt - @d(qHx)/dx))/(1.0 + @dtauH()/dt)
+
+@parallel function compute_flux!(qHx, H, D, dtauq, dx)
+    @all(qHx) = (@all(qHx) - @all(dtauq)*@d(H)/dx)/(1.0 + @all(dtauq)/@all(D))
+    return
+end
+
+@parallel function compute_update!(H, Hold, qHx, dtauH, dt, dx)
+    @inn(H) = (@inn(H) + @all(dtauH)*(@inn(Hold)/dt - @d(qHx)/dx))/(1.0 + @all(dtauH)/dt)
     return
 end
 
@@ -31,6 +35,8 @@ end
 @views function diffusion_1D(; nx=512, do_viz=false)
     # Physics
     lx     = 10.0       # domain size
+    D1     = 1          # diffusion coefficient
+    D2     = 1e-4       # diffusion coefficient
     ttot   = 1.0        # total simulation time
     dt     = 0.2        # physical time step
     # Numerics
@@ -45,18 +51,26 @@ end
     # Array allocation
     qHx    = @zeros(nx-1)
     ResH   = @zeros(nx-2)
+    Re_opt = @zeros(nx-1)
+    dtauq  = @zeros(nx-1)
+    dtauH  = @zeros(nx-1)
     # Initial condition
+    D      = D2*@ones(nx-1)
+    D[1:Int(ceil(nx/2.5))] .= D1
     H0     = Data.Array( exp.(-(xc.-lx/2).^2) )
     Hold   = @ones(nx).*H0
     H      = @ones(nx).*H0
+    @parallel compute_dtau!(Re_opt, dtauq, dtauH, D, lx, dmp, CFLdx, dx)
+    dtauq[1] = dtauq[2]; dtauq[end] = dtauq[end-1]
+    dtauH[1] = dtauH[2]; dtauH[end] = dtauH[end-1]
     t = 0.0; it = 0; ittot = 0
     # Physical time loop
     while t<ttot
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, H, dmp, CFLdx, lx, dx)
-            @parallel compute_update!(H, Hold, qHx, dt, dmp, CFLdx, lx, dx)
+            @parallel compute_flux!(qHx, H, D, dtauq, dx)
+            @parallel compute_update!(H, Hold, qHx, dtauH, dt, dx)
             @parallel check_res!(ResH, H, Hold, qHx, dt, dx)
             iter += 1; err = norm(ResH)/length(ResH)
         end
