@@ -12,21 +12,30 @@ This repository contains various diffusion solvers to examplify, test and asses 
 * [References](#references)
 
 ## The diffusion equation
-In this study we will use the (non-linear) diffusion (reaction) equation in 1D, 2D (and 3D):
+In this study we will use the (non-linear) diffusion (reaction) equation in 1D, 2D (and 3D).
+
+### The 1D diffusion
+Without including a source term (or reaction):
+```julia
+qHx   = -D*dH/dx
+dH/dt = -dqHx/dx
+```
+### The 2D diffusion
+Without including a source term (or reaction):
 ```julia
 qHx   = -D*dH/dx
 qHy   = -D*dH/dy
-dH/dt = -(dqHx/dx + dqHy/dy) + M
+dH/dt = -(dqHx/dx + dqHy/dy)
 ```
 
 ## Scripts
-- The [`diff_1D_lin.jl`](scripts/diff_1D_lin.jl) scripts solves the 1D linear (`D=1` and without M term) [diffusion equation](#the-diffusion-equation) including damping to accelerate convergence
-- The [`diff_1D_lin2.jl`](scripts/diff_1D_lin2.jl) scripts solves the 1D linear (`D=1` and without M term) [diffusion equation](#the-diffusion-equation) testing a new convergence acceleration
-- The [`diff_1D_nonlin.jl`](scripts/diff_1D_nonlin.jl) scripts solves the 1D nonlinear (`D=H^3` and without M term) [diffusion equation](#the-diffusion-equation) including damping to accelerate convergence
-- The [`diff_1D_nonlin2.jl`](scripts/diff_1D_nonlin2.jl) scripts solves the 1D nonlinear (`D=H^3` and without M term) [diffusion equation](#the-diffusion-equation) testing a new convergence acceleration
+- The [`diff_1D_lin.jl`](scripts/diff_1D_lin.jl) scripts solves the 1D linear (`D=1` and without M term) [diffusion equation](#the-1d-diffusion) including damping to accelerate convergence
+- The [`diff_1D_lin2.jl`](scripts/diff_1D_lin2.jl) scripts solves the 1D linear (`D=1` and without M term) [diffusion equation](#the-1d-diffusion) testing a new convergence acceleration
+- The [`diff_1D_nonlin.jl`](scripts/diff_1D_nonlin.jl) scripts solves the 1D nonlinear (`D=H^3` and without M term) [diffusion equation](#the-1d-diffusion) including damping to accelerate convergence
+- The [`diff_1D_nonlin2.jl`](scripts/diff_1D_nonlin2.jl) scripts solves the 1D nonlinear (`D=H^3` and without M term) [diffusion equation](#the-1d-diffusion) testing a new convergence acceleration
 
 
-- The `diff_2D_nonlin_perfcompare_xx.jl` scripts are used to generate the following figure (for [ParallelStencil.jl] repo):
+- The `diff_2D_nonlin_perfcompare_xx.jl` scripts solve the nonlinear [2D diffusion equation](#the-2d-diffusion) are used to generate the following figure (used in the [ParallelStencil.jl] repo):
 
 ![](docs/perf_ps2.png)
 
