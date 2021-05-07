@@ -80,7 +80,7 @@ g_mu     = 1.0
 lx, ly   = 2.0, 2.0
 
 # Numerics
-nx, ny   = 81, 81
+nx, ny   = 8192, 8192
 nt       = 10 #2 #10
 itermax  = 100
 ncheck   = 10
