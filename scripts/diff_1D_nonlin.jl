@@ -35,7 +35,7 @@ end
     # nx     = 2*256        # numerical grid resolution
     tol    = 1e-6       # tolerance
     itMax  = 1e5        # max number of iterations
-    damp   = 1-44/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
+    damp   = 1-min(nx,44)/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx     = lx/nx      # grid size
     xc     = LinRange(dx/2, lx-dx/2, nx)
