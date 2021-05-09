@@ -72,7 +72,7 @@ end
         ittot += iter; it += 1; t += dt
         Hold .= H
     end
-    @printf("Total time = %1.2f, time steps = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, ittot)
+    @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
     if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion (nt=$it, iters=$ittot)")) end
     return nx, ittot
