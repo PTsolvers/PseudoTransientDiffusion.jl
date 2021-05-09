@@ -50,9 +50,13 @@ dH/dt = -(dqHx/dx + dqHy/dy)
 ![](docs/perf_ps2.png)
 
 ## Results
-Scaling analysis - iteration count normalised by grid resolution in x direction (`nx`) as function of `nx`.
+Scaling analysis - iteration count normalised by grid resolution in x direction (`nx`) as function of `nx` for
+
+- the [2D linear diffusion equation](#the-2d-diffusion) using damping
 
 ![](docs/scale_diff_2D_lin.png)
+
+- the [2D linear diffusion equation](#the-2d-diffusion) using the new damping approach
 
 ![](docs/scale_diff_2D_lin2.png)
 
