@@ -40,8 +40,8 @@ dH/dt = -(dqHx/dx + dqHy/dy)
 
 ![](docs/diff_1D_nonlin.png)
 
-- The [`diff_1D_linstep.jl`](scripts/diff_1D_linstep.jl) scripts solves the [1D diffusion equation](#the-1d-diffusion) with dicontinuous diffusion coefficient including damping to accelerate convergence
-- The [`diff_1D_linstep2.jl`](scripts/diff_1D_linstep2.jl) scripts solves the [1D diffusion equation](#the-1d-diffusion) with dicontinuous diffusion coefficient including a new convergence acceleration
+- The [`diff_1D_linstep.jl`](scripts/diff_1D_linstep.jl) scripts solves the [1D diffusion equation](#the-1d-diffusion) with a 1e4 contrast in values of the diffusion coefficient including damping to accelerate convergence
+- The [`diff_1D_linstep2.jl`](scripts/diff_1D_linstep2.jl) scripts solves the [1D diffusion equation](#the-1d-diffusion) with a 1e4 contrast in values of the diffusion coefficient including a new convergence acceleration
 
 ![](docs/diff_1D_linstep.png)
 
