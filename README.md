@@ -9,6 +9,7 @@ This repository contains various diffusion solvers to examplify, test and asses 
 ## Content
 * [The diffusion equation](#the-diffusion-equation)
 * [Scripts](#scripts)
+* [Results](#results)
 * [References](#references)
 
 ## The diffusion equation
@@ -30,19 +31,30 @@ dH/dt = -(dqHx/dx + dqHy/dy)
 
 ## Scripts
 - The [`diff_1D_lin.jl`](scripts/diff_1D_lin.jl) scripts solves the linear (`D=1`) [1D diffusion equation](#the-1d-diffusion) including damping to accelerate convergence
-- The [`diff_1D_lin2.jl`](scripts/diff_1D_lin2.jl) scripts solves the linear (`D=1`) [1D diffusion equation](#the-1d-diffusion) testing a new convergence acceleration
+- The [`diff_1D_lin2.jl`](scripts/diff_1D_lin2.jl) scripts solves the linear (`D=1`) [1D diffusion equation](#the-1d-diffusion) including a new convergence acceleration
 
 ![](docs/diff_1D_lin.png)
 
 - The [`diff_1D_nonlin.jl`](scripts/diff_1D_nonlin.jl) scripts solves the nonlinear (`D=H^3`) [1D diffusion equation](#the-1d-diffusion) including damping to accelerate convergence
-- The [`diff_1D_nonlin2.jl`](scripts/diff_1D_nonlin2.jl) scripts solves the nonlinear (`D=H^3`) [1D diffusion equation](#the-1d-diffusion) testing a new convergence acceleration
+- The [`diff_1D_nonlin2.jl`](scripts/diff_1D_nonlin2.jl) scripts solves the nonlinear (`D=H^3`) [1D diffusion equation](#the-1d-diffusion) including a new convergence acceleration
 
 ![](docs/diff_1D_nonlin.png)
+
+- The [`diff_1D_linstep.jl`](scripts/diff_1D_linstep.jl) scripts solves the [1D diffusion equation](#the-1d-diffusion) with dicontinuous diffusion coefficient including damping to accelerate convergence
+- The [`diff_1D_linstep2.jl`](scripts/diff_1D_linstep2.jl) scripts solves the [1D diffusion equation](#the-1d-diffusion) with dicontinuous diffusion coefficient including a new convergence acceleration
+
+![](docs/diff_1D_linstep.png)
 
 - The `diff_2D_nonlin_perfcompare_xx.jl` scripts solve the nonlinear [2D diffusion equation](#the-2d-diffusion) are used to generate the following figure (used in the [ParallelStencil.jl] repo):
 
 ![](docs/perf_ps2.png)
 
+## Results
+Scaling analysis - iteration count normalised by grid resolution in x direction (`nx`) as function of `nx`.
+
+![](docs/scale_diff_2D_lin.png)
+
+![](docs/scale_diff_2D_lin2.png)
 
 ## References
 [Frankel, S. P. (1950). Convergence rates of iterative treatments of partial differential equations, Mathe. Tables Other Aids Comput., 4, 65–75.](https://doi.org/10.2307/2002770)

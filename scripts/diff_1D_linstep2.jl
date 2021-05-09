@@ -83,4 +83,4 @@ end
     return nx, ittot
 end
 
-# diffusion_1D(; )
+# diffusion_1D(; do_viz=true)
