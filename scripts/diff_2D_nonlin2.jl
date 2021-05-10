@@ -20,9 +20,11 @@ macro av_ya_dtauq()  esc(:( dmp*CFLdx*lx/@av_ya_Re_opt() )) end
 macro av_xa_dtauq()  esc(:( dmp*CFLdx*lx/@av_xa_Re_opt() )) end
 macro dtauH()   esc(:( CFLdx^2/(dmp*CFLdx*lx/@Re_opt())  )) end # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
 
-@parallel function compute_flux!(qHx, qHy, H, dmp, CFLdx, lx, dx, dy)
-    @all(qHx) = (@all(qHx) - @av_ya_dtauq()*@d_xi(H)/dx)/(1.0 + @av_ya_dtauq()/@av_xiH3())
-    @all(qHy) = (@all(qHy) - @av_xa_dtauq()*@d_yi(H)/dy)/(1.0 + @av_xa_dtauq()/@av_yiH3())
+@parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, dmp, CFLdx, lx, dx, dy)
+    @all(qHx)  = (@all(qHx) - @av_ya_dtauq()*@d_xi(H)/dx)/(1.0 + @av_ya_dtauq()/@av_xiH3())
+    @all(qHy)  = (@all(qHy) - @av_xa_dtauq()*@d_yi(H)/dy)/(1.0 + @av_xa_dtauq()/@av_yiH3())
+    @all(qHx2) = -@av_xiH3()*@d_xi(H)/dx
+    @all(qHy2) = -@av_yiH3()*@d_yi(H)/dy
     return
 end
 
@@ -31,30 +33,31 @@ end
     return
 end
 
-@parallel function check_res!(ResH, H, Hold, qHx, qHy, dt, dx, dy)
-    @all(ResH) = -(@inn(H)-@inn(Hold))/dt - (@d_xa(qHx)/dx + @d_ya(qHy)/dy)
+@parallel function check_res!(ResH, H, Hold, qHx2, qHy2, dt, dx, dy)
+    @all(ResH) = -(@inn(H)-@inn(Hold))/dt - (@d_xa(qHx2)/dx + @d_ya(qHy2)/dy)
     return
 end
 
 @views function diffusion_2D(; nx=512, ny=512, do_viz=false)
     # Physics
     lx, ly  = 10.0, 10.0    # domain size
-    D1      = 1.0          # diffusion coefficient
-    D2      = 1e-4         # diffusion coefficient
     ttot    = 1.0           # total simulation time
     dt      = 0.2           # physical time step
     # Numerics
     # nx     = 2*256        # numerical grid resolution
-    tol     = 1e-6          # tolerance
+    tol     = 1e-8          # tolerance
     itMax   = 1e5           # max number of iterations
+    nout    = 10            # tol check
     # Derived numerics
     dx, dy  = lx/nx, ly/ny  # grid size    
-    dmp     = 1.1
+    dmp     = 7.0
     CFLdx   = 0.7*dx
     xc, yc  = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny)
     # Array allocation
     qHx     = @zeros(nx-1,ny-2)
     qHy     = @zeros(nx-2,ny-1)
+    qHx2    = @zeros(nx-1,ny-2)
+    qHy2    = @zeros(nx-2,ny-1)
     ResH    = @zeros(nx-2,ny-2)
     # Initial condition
     H0      = Data.Array( exp.(-(xc.-lx/2).^2 .-(yc'.-ly/2).^2) )
@@ -66,10 +69,10 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, qHy, H, dmp, CFLdx, lx, dx, dy)
+            @parallel compute_flux!(qHx, qHy, qHx2, qHy2, H, dmp, CFLdx, lx, dx, dy)
             @parallel compute_update!(H, Hold, qHx, qHy, dt, dmp, CFLdx, lx, dx, dy)
-            @parallel check_res!(ResH, H, Hold, qHx, qHy, dt, dx, dy)
-            iter += 1; err = norm(ResH)/length(ResH)
+            @parallel check_res!(ResH, H, Hold, qHx2, qHy2, dt, dx, dy)
+            iter += 1; if (iter % nout == 0)  err = norm(ResH)/length(ResH)  end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
@@ -77,7 +80,7 @@ end
     end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
-    if do_viz display(heatmap(xc, yc, H', aspect_ratio=1, framestyle=:box, xlims=(xc[1],xc[end]), ylims=(yc[1],yc[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="linear diffusion (nt=$it, iters=$ittot)")) end
+    if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1],xc[end]), ylims=(yc[1],yc[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="linear diffusion (nt=$it, iters=$ittot)")) end
     return nx, ny, ittot
 end
 

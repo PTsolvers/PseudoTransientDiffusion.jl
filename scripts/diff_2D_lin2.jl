@@ -8,9 +8,11 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-@parallel function compute_flux!(qHx, qHy, H, D, dtauq, dx, dy)
-    @all(qHx) = (@all(qHx) - dtauq*@d_xi(H)/dx)/(1.0 + dtauq/D)
-    @all(qHy) = (@all(qHy) - dtauq*@d_yi(H)/dy)/(1.0 + dtauq/D)
+@parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, D, dtauq, dx, dy)
+    @all(qHx)  = (@all(qHx) - dtauq*@d_xi(H)/dx)/(1.0 + dtauq/D)
+    @all(qHy)  = (@all(qHy) - dtauq*@d_yi(H)/dy)/(1.0 + dtauq/D)
+    @all(qHx2) = -D*@d_xi(H)/dx
+    @all(qHy2) = -D*@d_yi(H)/dy
     return
 end
 
@@ -19,8 +21,8 @@ end
     return
 end
 
-@parallel function check_res!(ResH, H, Hold, qHx, qHy, dt, dx, dy)
-    @all(ResH) = -(@inn(H)-@inn(Hold))/dt - (@d_xa(qHx)/dx + @d_ya(qHy)/dy)
+@parallel function check_res!(ResH, H, Hold, qHx2, qHy2, dt, dx, dy)
+    @all(ResH) = -(@inn(H)-@inn(Hold))/dt - (@d_xa(qHx2)/dx + @d_ya(qHy2)/dy)
     return
 end
 
@@ -32,11 +34,12 @@ end
     dt      = 0.2           # physical time step
     # Numerics
     # nx     = 2*256        # numerical grid resolution
-    tol     = 1e-6          # tolerance
+    tol     = 1e-8          # tolerance
     itMax   = 1e5           # max number of iterations
+    nout    = 10            # tol check
     # Derived numerics
     dx, dy  = lx/nx, ly/ny  # grid size    
-    dmp     = 1.9
+    dmp     = 3.5
     CFLdx   = 0.7*dx
     Re_opt  = π + sqrt(π^2 + (lx/D)^2)
     dtauq   = dmp*CFLdx*lx/Re_opt
@@ -45,6 +48,8 @@ end
     # Array allocation
     qHx     = @zeros(nx-1,ny-2)
     qHy     = @zeros(nx-2,ny-1)
+    qHx2    = @zeros(nx-1,ny-2)
+    qHy2    = @zeros(nx-2,ny-1)
     dHdt    = @zeros(nx-2,ny-2)
     ResH    = @zeros(nx-2,ny-2)
     # Initial condition
@@ -57,10 +62,10 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, qHy, H, D, dtauq, dx, dy)
+            @parallel compute_flux!(qHx, qHy, qHx2, qHy2, H, D, dtauq, dx, dy)
             @parallel compute_update!(H, Hold, qHx, qHy, dtauH, dt, dx, dy)
-            @parallel check_res!(ResH, H, Hold, qHx, qHy, dt, dx, dy)
-            iter += 1; err = norm(ResH)/length(ResH)
+            @parallel check_res!(ResH, H, Hold, qHx2, qHy2, dt, dx, dy)
+            iter += 1; if (iter % nout == 0)  err = norm(ResH)/length(ResH)  end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
@@ -68,7 +73,7 @@ end
     end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
-    if do_viz display(heatmap(xc, yc, H', aspect_ratio=1, framestyle=:box, xlims=(xc[1],xc[end]), ylims=(yc[1],yc[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="linear diffusion (nt=$it, iters=$ittot)")) end
+    if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1],xc[end]), ylims=(yc[1],yc[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="linear diffusion (nt=$it, iters=$ittot)")) end
     return nx, ny, ittot
 end
 

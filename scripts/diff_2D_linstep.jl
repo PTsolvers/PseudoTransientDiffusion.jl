@@ -40,8 +40,9 @@ end
     dt      = 0.2          # physical time step
     # Numerics
     # nx     = 2*256       # numerical grid resolution
-    tol     = 1e-6         # tolerance
+    tol     = 1e-8         # tolerance
     itMax   = 1e5          # max number of iterations
+    nout    = 10           # tol check
     damp    = 1-22/nx      # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx, dy  = lx/nx, ly/ny # grid size
@@ -53,8 +54,9 @@ end
     ResH    = @zeros(nx-2,ny-2)
     dtau    = @zeros(nx-2,ny-2)
     # Initial condition
-    D       = D2*@ones(nx,ny)
-    D[1:Int(ceil(nx/2.5)),:] .= D1
+    D       = D1*@ones(nx,ny)
+    D[1:Int(ceil(nx/2.2)),:] .= D2
+    D[:,1:Int(ceil(ny/2.2))] .= D2
     H0      = Data.Array( exp.(-(xc.-lx/2).^2 .-(yc'.-ly/2).^2) )
     Hold    = @ones(nx,ny).*H0
     H       = @ones(nx,ny).*H0
@@ -68,7 +70,7 @@ end
             @parallel compute_flux!(qHx, qHy, H, D, dx, dy)
             @parallel compute_rate!(ResH, dHdt, H, Hold, qHx, qHy, dt, damp, dx, dy)
             @parallel compute_update!(H, dHdt, dtau)
-            iter += 1; err = norm(ResH)/length(ResH)
+            iter += 1; if (iter % nout == 0)  err = norm(ResH)/length(ResH)  end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
@@ -76,7 +78,7 @@ end
     end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
-    if do_viz display(heatmap(xc, yc, H', aspect_ratio=1, framestyle=:box, xlims=(xc[1],xc[end]), ylims=(yc[1],yc[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="linear diffusion (nt=$it, iters=$ittot)")) end
+    if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1],xc[end]), ylims=(yc[1],yc[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="linear diffusion (nt=$it, iters=$ittot)")) end
     return nx, ny, ittot
 end
 

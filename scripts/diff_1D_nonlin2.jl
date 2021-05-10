@@ -15,8 +15,9 @@ macro Re_opt()   esc(:( π + sqrt(π^2 + (lx/@innH3())^2)  )) end
 macro dtauq()    esc(:( dmp*CFLdx*lx/@avRe_opt()         )) end
 macro dtauH()    esc(:( CFLdx^2/(dmp*CFLdx*lx/@Re_opt()) )) end # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
 
-@parallel function compute_flux!(qHx, H, dmp, CFLdx, lx, dx)
-    @all(qHx) = (@all(qHx) - @dtauq()*@d(H)/dx)/(1.0 + @dtauq()/@avH3())
+@parallel function compute_flux!(qHx, qHx2, H, dmp, CFLdx, lx, dx)
+    @all(qHx)  = (@all(qHx) - @dtauq()*@d(H)/dx)/(1.0 + @dtauq()/@avH3())
+    @all(qHx2) = -@avH3()*@d(H)/dx
     return
 end
 
@@ -25,8 +26,8 @@ end
     return
 end
 
-@parallel function check_res!(ResH, H, Hold, qHx, dt, dx)
-    @inn(ResH) = -(@inn(H)-@inn(Hold))/dt - @d(qHx)/dx
+@parallel function check_res!(ResH, H, Hold, qHx2, dt, dx)
+    @inn(ResH) = -(@inn(H)-@inn(Hold))/dt - @d(qHx2)/dx
     return
 end
 
@@ -37,15 +38,17 @@ end
     dt     = 0.2        # physical time step
     # Numerics
     # nx     = 2*256      # numerical grid resolution
-    tol    = 1e-6       # tolerance
+    tol    = 1e-8       # tolerance
     itMax  = 1e5        # max number of iterations
+    nout   = 10         # tol check
     # Derived numerics
     dx     = lx/nx      # grid size
-    dmp    = 3.0
+    dmp    = 5.0
     CFLdx  = 0.7*dx
     xc     = LinRange(dx/2, lx-dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
+    qHx2   = @zeros(nx-1)
     ResH   = @zeros(nx-2)
     # Initial condition
     H0     = Data.Array( exp.(-(xc.-lx/2).^2) )
@@ -57,10 +60,10 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, H, dmp, CFLdx, lx, dx)
+            @parallel compute_flux!(qHx, qHx2, H, dmp, CFLdx, lx, dx)
             @parallel compute_update!(H, Hold, qHx, dt, dmp, CFLdx, lx, dx)
-            @parallel check_res!(ResH, H, Hold, qHx, dt, dx)
-            iter += 1; err = norm(ResH)/length(ResH)
+            @parallel check_res!(ResH, H, Hold, qHx2, dt, dx)
+            iter += 1; if (iter % nout == 0)  err = norm(ResH)/length(ResH)  end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
@@ -72,4 +75,4 @@ end
     return nx, ittot
 end
 
-# diffusion_1D(; do_viz=true)
+# diffusion_1D(; nx=512, do_viz=true)

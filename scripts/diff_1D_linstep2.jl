@@ -24,8 +24,9 @@ end
     return
 end
 
-@parallel function compute_flux!(qHx, H, D, dtauq, dx)
-    @all(qHx) = (@all(qHx) - @all(dtauq)*@d(H)/dx)/(1.0 + @all(dtauq)/@av(D))
+@parallel function compute_flux!(qHx, qHx2, H, D, dtauq, dx)
+    @all(qHx)  = (@all(qHx) - @all(dtauq)*@d(H)/dx)/(1.0 + @all(dtauq)/@av(D))
+    @all(qHx2) = -@av(D)*@d(H)/dx
     return
 end
 
@@ -34,8 +35,8 @@ end
     return
 end
 
-@parallel function check_res!(ResH, H, Hold, qHx, dt, dx)
-    @inn(ResH) = -(@inn(H)-@inn(Hold))/dt - @d(qHx)/dx
+@parallel function check_res!(ResH, H, Hold, qHx2, dt, dx)
+    @inn(ResH) = -(@inn(H)-@inn(Hold))/dt - @d(qHx2)/dx
     return
 end
 
@@ -48,22 +49,24 @@ end
     dt     = 0.2        # physical time step
     # Numerics
     # nx     = 2*256      # numerical grid resolution
-    tol    = 1e-6       # tolerance
+    tol    = 1e-8       # tolerance
     itMax  = 1e5        # max number of iterations
+    nout   = 10         # tol check
     # Derived numerics
     dx     = lx/nx      # grid size
-    dmp    = 1.9
+    dmp    = 2.2
     CFLdx  = 0.7*dx
     xc     = LinRange(dx/2, lx-dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
+    qHx2   = @zeros(nx-1)
     ResH   = @zeros(nx-2)
     Re_opt = @zeros(nx  )
     dtauq  = @zeros(nx-1)
     dtauH  = @zeros(nx-2)
     # Initial condition
-    D      = D2*@ones(nx)
-    D[1:Int(ceil(nx/2.5))] .= D1
+    D      = D1*@ones(nx)
+    D[1:Int(ceil(nx/2.2))] .= D2
     H0     = Data.Array( exp.(-(xc.-lx/2).^2) )
     Hold   = @ones(nx).*H0
     H      = @ones(nx).*H0
@@ -77,10 +80,10 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, H, D, dtauq, dx)
+            @parallel compute_flux!(qHx, qHx2, H, D, dtauq, dx)
             @parallel compute_update!(H, Hold, qHx, dtauH, dt, dx)
-            @parallel check_res!(ResH, H, Hold, qHx, dt, dx)
-            iter += 1; err = norm(ResH)/length(ResH)
+            @parallel check_res!(ResH, H, Hold, qHx2, dt, dx)
+            iter += 1; if (iter % nout == 0)  err = norm(ResH)/length(ResH)  end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
