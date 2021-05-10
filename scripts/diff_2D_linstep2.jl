@@ -8,14 +8,30 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
+@parallel function compute_Re!(Re_opt, D, lx)
+    # @inn(Re_opt) = π + sqrt(π^2 + (lx/@inn(D))^2)
+    @inn(Re_opt) = π + sqrt(π^2 + (lx/@maxloc(D))^2)
+    return
+end
+
+@parallel function compute_dtauq!(dtauq, Re_opt, dmp, CFLdx, lx)
+    @all(dtauq)  = dmp*CFLdx*lx/@av(Re_opt)
+    return
+end
+
+@parallel function compute_dtauH!(dtauH, dtauq, CFLdx)
+    @all(dtauH)  = CFLdx^2/@av(dtauq) # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
+    return
+end
+
 @parallel function compute_flux!(qHx, qHy, H, D, dtauq, dx, dy)
-    @all(qHx) = (@all(qHx) - dtauq*@d_xi(H)/dx)/(1.0 + dtauq/D)
-    @all(qHy) = (@all(qHy) - dtauq*@d_yi(H)/dy)/(1.0 + dtauq/D)
+    @all(qHx) = (@all(qHx) - @av_ya(dtauq)*@d_xi(H)/dx)/(1.0 + @av_ya(dtauq)/@av_xi(D))
+    @all(qHy) = (@all(qHy) - @av_xa(dtauq)*@d_yi(H)/dy)/(1.0 + @av_xa(dtauq)/@av_yi(D))
     return
 end
 
 @parallel function compute_update!(H, Hold, qHx, qHy, dtauH, dt, dx, dy)
-    @inn(H) = (@inn(H) + dtauH*(@inn(Hold)/dt - (@d_xa(qHx)/dx + @d_ya(qHy)/dy)))/(1.0 + dtauH/dt)
+    @inn(H) = (@inn(H) + @all(dtauH)*(@inn(Hold)/dt - (@d_xa(qHx)/dx + @d_ya(qHy)/dy)))/(1.0 + @all(dtauH)/dt)
     return
 end
 
@@ -27,7 +43,8 @@ end
 @views function diffusion_2D(; nx=512, ny=512, do_viz=false)
     # Physics
     lx, ly  = 10.0, 10.0    # domain size
-    D       = 1.0           # diffusion coefficient
+    D1      = 1.0          # diffusion coefficient
+    D2      = 1e-4         # diffusion coefficient
     ttot    = 1.0           # total simulation time
     dt      = 0.2           # physical time step
     # Numerics
@@ -36,21 +53,27 @@ end
     itMax   = 1e5           # max number of iterations
     # Derived numerics
     dx, dy  = lx/nx, ly/ny  # grid size    
-    dmp     = 1.9
+    dmp     = 1.2
     CFLdx   = 0.7*dx
-    Re_opt  = π + sqrt(π^2 + (lx/D)^2)
-    dtauq   = dmp*CFLdx*lx/Re_opt
-    dtauH   = CFLdx^2/dtauq # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
     xc, yc  = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny)
     # Array allocation
     qHx     = @zeros(nx-1,ny-2)
     qHy     = @zeros(nx-2,ny-1)
-    dHdt    = @zeros(nx-2,ny-2)
     ResH    = @zeros(nx-2,ny-2)
+    Re_opt  = @zeros(nx  ,ny  )
+    dtauq   = @zeros(nx-1,ny-1)
+    dtauH   = @zeros(nx-2,ny-2)
     # Initial condition
+    D       = D2*@ones(nx,ny)
+    D[1:Int(ceil(nx/2.5)),:] .= D1
     H0      = Data.Array( exp.(-(xc.-lx/2).^2 .-(yc'.-ly/2).^2) )
     Hold    = @ones(nx,ny).*H0
     H       = @ones(nx,ny).*H0
+    @parallel compute_Re!(Re_opt, D, lx)
+    Re_opt[1,:] = Re_opt[2,:]; Re_opt[end,:] = Re_opt[end-1,:]
+    Re_opt[:,1] = Re_opt[:,2]; Re_opt[:,end] = Re_opt[:,end-1]
+    @parallel compute_dtauq!(dtauq, Re_opt, dmp, CFLdx, lx)
+    @parallel compute_dtauH!(dtauH, dtauq, CFLdx)
     t = 0.0; it = 0; ittot = 0
     # Physical time loop
     while t<ttot

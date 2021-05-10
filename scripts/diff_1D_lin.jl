@@ -60,6 +60,7 @@ end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
+        if isnan(err) error("NaN") end
     end
     # Analytic solution
     Hana = 1/sqrt(4*(ttot+1/4)) * exp.(-(xc.-lx/2).^2 /(4*(ttot+1/4)))

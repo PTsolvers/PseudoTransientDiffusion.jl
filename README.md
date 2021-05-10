@@ -45,7 +45,7 @@ dH/dt = -(dqHx/dx + dqHy/dy)
 
 ![](docs/diff_1D_linstep.png)
 
-- The `diff_2D_nonlin_perfcompare_xx.jl` scripts solve the nonlinear [2D diffusion equation](#the-2d-diffusion) are used to generate the following figure (used in the [ParallelStencil.jl] repo):
+- The `perf_diff_2D_nonlin_perfcompare_xx.jl` scripts solve the nonlinear [2D diffusion equation](#the-2d-diffusion) are used to generate the following figure (used in the [ParallelStencil.jl] repo):
 
 ![](docs/perf_ps2.png)
 

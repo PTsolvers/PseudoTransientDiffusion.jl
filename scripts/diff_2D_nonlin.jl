@@ -8,9 +8,14 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-@parallel function compute_flux!(qHx, qHy, H, D, dx, dy)
-    @all(qHx) = -D*@d_xi(H)/dx
-    @all(qHy) = -D*@d_yi(H)/dy
+macro innH3()   esc(:( @inn(H)*@inn(H)*@inn(H) )) end
+macro av_xiH3() esc(:( @av_xi(H)*@av_xi(H)*@av_xi(H) )) end
+macro av_yiH3() esc(:( @av_yi(H)*@av_yi(H)*@av_yi(H) )) end
+macro dtau()    esc(:( 1.0/(1.0/(min(dx,dy)^2 ./@innH3()/4.1) + 1.0/dt) )) end
+
+@parallel function compute_flux!(qHx, qHy, H, dx, dy)
+    @all(qHx) = -@av_xiH3()*@d_xi(H)/dx
+    @all(qHy) = -@av_yiH3()*@d_yi(H)/dy
     return
 end
 
@@ -20,25 +25,23 @@ end
     return
 end
 
-@parallel function compute_update!(H, dHdt, dtau)
-    @inn(H) = @inn(H) + dtau*@all(dHdt)
+@parallel function compute_update!(H, dHdt, dt, dx, dy)
+    @inn(H) = @inn(H) + @dtau()*@all(dHdt)
     return
 end
 
 @views function diffusion_2D(; nx=512, ny=512, do_viz=false)
     # Physics
     lx, ly  = 10.0, 10.0   # domain size
-    D       = 1.0          # diffusion coefficient
     ttot    = 1.0          # total simulation time
     dt      = 0.2          # physical time step
     # Numerics
     # nx     = 2*256       # numerical grid resolution
     tol     = 1e-6         # tolerance
     itMax   = 1e5          # max number of iterations
-    damp    = 1-22/nx      # damping (this is a tuning parameter, dependent on e.g. grid resolution)
+    damp    = 1-25/nx      # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx, dy  = lx/nx, ly/ny # grid size
-    dtau    = (1.0/(min(dx,dy)^2/D/4.1) + 1.0/dt)^-1 # iterative timestep
     xc, yc  = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny)
     # Array allocation
     qHx     = @zeros(nx-1,ny-2)
@@ -55,9 +58,9 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, qHy, H, D, dx, dy)
+            @parallel compute_flux!(qHx, qHy, H, dx, dy)
             @parallel compute_rate!(ResH, dHdt, H, Hold, qHx, qHy, dt, damp, dx, dy)
-            @parallel compute_update!(H, dHdt, dtau)
+            @parallel compute_update!(H, dHdt, dt, dx, dy)
             iter += 1; err = norm(ResH)/length(ResH)
         end
         ittot += iter; it += 1; t += dt

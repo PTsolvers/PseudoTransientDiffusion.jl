@@ -42,7 +42,7 @@ end
 @views function runtests_2D(name; gen_data=false, do_save=false, do_viz=true)
     
     if gen_data
-        resol = 16 * 2 .^ (1:8)
+        resol = 16 * 2 .^ (1:6)
 
         out = zeros(3, length(resol))
 
@@ -65,22 +65,30 @@ end
     if do_viz vizualise(out, name) end
 end
 
-# - Run 1D scaling ----------------------------------------------
-# include("diff_1D_lin.jl"); name = "diff_1D_lin"
-# include("diff_1D_lin2.jl"); name = "diff_1D_lin2"
-# include("diff_1D_linstep.jl"); name = "diff_1D_linstep"
-# include("diff_1D_linstep2.jl"); name = "diff_1D_linstep2"
-# include("diff_1D_nonlin.jl"); name = "diff_1D_nonlin"
-# include("diff_1D_nonlin2.jl"); name = "diff_1D_nonlin2"
+# - Run tests ----------------------------------------------
+tests = "test_1D"
 
-# @time runtests_1D(name; )
+if tests=="test_1D"
+    
+    test_name = ("diff_1D_lin", "diff_1D_lin2", "diff_1D_linstep", "diff_1D_linstep2", "diff_1D_nonlin", "diff_1D_nonlin2")
+    
+    for itest = 1:length(test_name)
+        testfile = test_name[itest] * ".jl"; print(">--- "); println(testfile)
+        include(testfile)
+        @time runtests_1D(test_name[itest]; gen_data=true, do_save=true)
+    end
 
-# - Run 2D scaling ----------------------------------------------
-include("diff_2D_lin.jl"); name = "diff_2D_lin"
-# include("diff_2D_lin2.jl"); name = "diff_2D_lin2"
+elseif tests=="test_2D"
 
-@time runtests_2D(name; )
+    test_name = ("diff_2D_lin", "diff_2D_lin2", "diff_2D_linstep", "diff_2D_linstep2", "diff_2D_nonlin", "diff_2D_nonlin2")
 
-# - Run 3D scaling ----------------------------------------------
+    for itest = 1:length(test_name)
+        testfile = test_name[itest] * ".jl"; print(">--- "); println(testfile)
+        include(testfile)
+        @time runtests_2D(test_name[itest];  gen_data=true, do_save=true)
+    end
 
+elseif tests=="test_3D"
+
+end
 

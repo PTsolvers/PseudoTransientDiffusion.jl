@@ -8,13 +8,15 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-macro H3()     esc(:( @av(H)*@av(H)*@av(H)         )) end
-macro Re_opt() esc(:( π + sqrt(π^2 + (lx/@H3())^2) )) end
-macro dtauq()  esc(:( dmp*CFLdx*lx/@Re_opt()       )) end
-macro dtauH()  esc(:( CFLdx^2/@dtauq()             )) end # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
+macro innH3()    esc(:( @inn(H)*@inn(H)*@inn(H)          )) end
+macro avH3()     esc(:( @av(H)*@av(H)*@av(H)             )) end
+macro avRe_opt() esc(:( π + sqrt(π^2 + (lx/@avH3())^2)   )) end
+macro Re_opt()   esc(:( π + sqrt(π^2 + (lx/@innH3())^2)  )) end
+macro dtauq()    esc(:( dmp*CFLdx*lx/@avRe_opt()         )) end
+macro dtauH()    esc(:( CFLdx^2/(dmp*CFLdx*lx/@Re_opt()) )) end # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
 
 @parallel function compute_flux!(qHx, H, dmp, CFLdx, lx, dx)
-    @all(qHx) = (@all(qHx) - @dtauq()*@d(H)/dx)/(1.0 + @dtauq()/@H3())
+    @all(qHx) = (@all(qHx) - @dtauq()*@d(H)/dx)/(1.0 + @dtauq()/@avH3())
     return
 end
 
@@ -62,6 +64,7 @@ end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
+        if isnan(err) error("NaN") end
     end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
@@ -69,4 +72,4 @@ end
     return nx, ittot
 end
 
-# diffusion_1D(; )
+# diffusion_1D(; do_viz=true)

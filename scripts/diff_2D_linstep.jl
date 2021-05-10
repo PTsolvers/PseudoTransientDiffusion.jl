@@ -8,9 +8,15 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
+@parallel function compute_dtau!(dtau, D, dt, dx, dy)
+    # @all(dtau) = 1.0./(1.0./(dx^2 ./@inn(D)/4.1) .+ 1.0/dt)
+    @all(dtau) = 1.0./(1.0./(min(dx,dy)^2 ./@maxloc(D)/4.1) .+ 1.0/dt)
+    return
+end
+
 @parallel function compute_flux!(qHx, qHy, H, D, dx, dy)
-    @all(qHx) = -D*@d_xi(H)/dx
-    @all(qHy) = -D*@d_yi(H)/dy
+    @all(qHx) = -@av_xi(D)*@d_xi(H)/dx
+    @all(qHy) = -@av_yi(D)*@d_yi(H)/dy
     return
 end
 
@@ -21,14 +27,15 @@ end
 end
 
 @parallel function compute_update!(H, dHdt, dtau)
-    @inn(H) = @inn(H) + dtau*@all(dHdt)
+    @inn(H) = @inn(H) + @all(dtau)*@all(dHdt)
     return
 end
 
 @views function diffusion_2D(; nx=512, ny=512, do_viz=false)
     # Physics
     lx, ly  = 10.0, 10.0   # domain size
-    D       = 1.0          # diffusion coefficient
+    D1      = 1.0          # diffusion coefficient
+    D2      = 1e-4         # diffusion coefficient
     ttot    = 1.0          # total simulation time
     dt      = 0.2          # physical time step
     # Numerics
@@ -38,17 +45,20 @@ end
     damp    = 1-22/nx      # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx, dy  = lx/nx, ly/ny # grid size
-    dtau    = (1.0/(min(dx,dy)^2/D/4.1) + 1.0/dt)^-1 # iterative timestep
     xc, yc  = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny)
     # Array allocation
     qHx     = @zeros(nx-1,ny-2)
     qHy     = @zeros(nx-2,ny-1)
     dHdt    = @zeros(nx-2,ny-2)
     ResH    = @zeros(nx-2,ny-2)
+    dtau    = @zeros(nx-2,ny-2)
     # Initial condition
+    D       = D2*@ones(nx,ny)
+    D[1:Int(ceil(nx/2.5)),:] .= D1
     H0      = Data.Array( exp.(-(xc.-lx/2).^2 .-(yc'.-ly/2).^2) )
     Hold    = @ones(nx,ny).*H0
     H       = @ones(nx,ny).*H0
+    @parallel compute_dtau!(dtau, D, dt, dx, dy)
     t = 0.0; it = 0; ittot = 0
     # Physical time loop
     while t<ttot

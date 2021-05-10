@@ -8,9 +8,12 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-macro H3() esc(:( @av(H)*@av(H)*@av(H) )) end
+macro innH3() esc(:( @inn(H)*@inn(H)*@inn(H) )) end
+macro avH3()  esc(:( @av(H)*@av(H)*@av(H)    )) end
+macro dtau()  esc(:( 1.0/(1.0/(dx*dx/@innH3()/2.1) + 1.0/dt) )) end
+
 @parallel function compute_flux!(qHx, H, dx)
-    @all(qHx) = -@H3()*@d(H)/dx
+    @all(qHx) = -@avH3()*@d(H)/dx
     return
 end
 
@@ -20,7 +23,6 @@ end
     return
 end
 
-macro dtau() esc(:( 1.0/(1.0/(dx*dx/@H3()/2.1) + 1.0/dt) )) end
 @parallel function compute_update!(H, dHdt, dt, dx)
     @inn(H) = @inn(H) + @dtau()*@all(dHdt)
     return
@@ -35,7 +37,7 @@ end
     # nx     = 2*256        # numerical grid resolution
     tol    = 1e-6       # tolerance
     itMax  = 1e5        # max number of iterations
-    damp   = 1-min(nx,44)/nx    # damping (this is a tuning parameter, dependent on e.g. grid resolution)
+    damp   = 1-min(nx,44)/nx  # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx     = lx/nx      # grid size
     xc     = LinRange(dx/2, lx-dx/2, nx)
@@ -60,6 +62,7 @@ end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
+        if isnan(err) error("NaN") end
     end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
@@ -67,4 +70,4 @@ end
     return nx, ittot
 end
 
-# diffusion_1D(; )
+# diffusion_1D(; do_viz=true)

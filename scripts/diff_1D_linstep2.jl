@@ -8,17 +8,24 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-@parallel function compute_dtau!(Re_opt, dtauq, dtauH, D, lx, dmp, CFLdx, dx)
-    @inn(Re_opt) = π + sqrt(π^2 + (lx/@inn(D))^2)
-    # @inn(Re_opt) = π + sqrt(π^2 + (lx/@maxloc(D))^2)
-    @inn(dtauq)  = dmp*CFLdx*lx/@inn(Re_opt)
-    @inn(dtauH)  = CFLdx^2/@inn(dtauq) # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
+@parallel function compute_Re!(Re_opt, D, lx)
+    # @inn(Re_opt) = π + sqrt(π^2 + (lx/@inn(D))^2)
+    @inn(Re_opt) = π + sqrt(π^2 + (lx/@maxloc(D))^2)
     return
 end
 
+@parallel function compute_dtauq!(dtauq, Re_opt, dmp, CFLdx, lx)
+    @all(dtauq)  = dmp*CFLdx*lx/@av(Re_opt)
+    return
+end
+
+@parallel function compute_dtauH!(dtauH, dtauq, CFLdx)
+    @all(dtauH)  = CFLdx^2/@av(dtauq) # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
+    return
+end
 
 @parallel function compute_flux!(qHx, H, D, dtauq, dx)
-    @all(qHx) = (@all(qHx) - @all(dtauq)*@d(H)/dx)/(1.0 + @all(dtauq)/@all(D))
+    @all(qHx) = (@all(qHx) - @all(dtauq)*@d(H)/dx)/(1.0 + @all(dtauq)/@av(D))
     return
 end
 
@@ -35,7 +42,7 @@ end
 @views function diffusion_1D(; nx=512, do_viz=false)
     # Physics
     lx     = 10.0       # domain size
-    D1     = 1          # diffusion coefficient
+    D1     = 1.0        # diffusion coefficient
     D2     = 1e-4       # diffusion coefficient
     ttot   = 1.0        # total simulation time
     dt     = 0.2        # physical time step
@@ -45,24 +52,25 @@ end
     itMax  = 1e5        # max number of iterations
     # Derived numerics
     dx     = lx/nx      # grid size
-    dmp    = 3.0
+    dmp    = 1.9
     CFLdx  = 0.7*dx
     xc     = LinRange(dx/2, lx-dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
     ResH   = @zeros(nx-2)
-    Re_opt = @zeros(nx-1)
+    Re_opt = @zeros(nx  )
     dtauq  = @zeros(nx-1)
-    dtauH  = @zeros(nx-1)
+    dtauH  = @zeros(nx-2)
     # Initial condition
-    D      = D2*@ones(nx-1)
+    D      = D2*@ones(nx)
     D[1:Int(ceil(nx/2.5))] .= D1
     H0     = Data.Array( exp.(-(xc.-lx/2).^2) )
     Hold   = @ones(nx).*H0
     H      = @ones(nx).*H0
-    @parallel compute_dtau!(Re_opt, dtauq, dtauH, D, lx, dmp, CFLdx, dx)
-    dtauq[1] = dtauq[2]; dtauq[end] = dtauq[end-1]
-    dtauH[1] = dtauH[2]; dtauH[end] = dtauH[end-1]
+    @parallel compute_Re!(Re_opt, D, lx)
+    Re_opt[1] = Re_opt[2]; Re_opt[end] = Re_opt[end-1]
+    @parallel compute_dtauq!(dtauq, Re_opt, dmp, CFLdx, lx)
+    @parallel compute_dtauH!(dtauH, dtauq, CFLdx)
     t = 0.0; it = 0; ittot = 0
     # Physical time loop
     while t<ttot
@@ -76,6 +84,7 @@ end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
+        if isnan(err) error("NaN") end
     end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
