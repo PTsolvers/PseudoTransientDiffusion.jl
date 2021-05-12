@@ -98,7 +98,7 @@ end
         end
     end
     finalize_global_grid()
-    return nx, ny, nz, ittot
+    return nx_g(), ny_g(), nz_g(), ittot
 end
 
 # diffusion_3D(; nx=64, ny=64, nz=64, do_viz=true)
