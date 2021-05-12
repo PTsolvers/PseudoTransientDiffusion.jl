@@ -13,10 +13,22 @@ norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WO
 
 @views inn(A) = A[2:end-1,2:end-1,2:end-1]
 
+@parallel_indices (ix,iy,iz) function init_D!()
+    
+    D[ix,iy,iz] 
+    return
+end
+
+@parallel function compute_dtau!(dtau, D, dt, dx, dy, dz)
+    # @all(dtau) = 1.0./(1.0./(min(dx,dy,dz)^2 ./@inn(D)/6.1) .+ 1.0/dt)
+    @all(dtau) = 1.0./(1.0./(min(dx,dy,dz)^2 ./@maxloc(D)/6.1) .+ 1.0/dt)
+    return
+end
+
 @parallel function compute_flux!(qHx, qHy, qHz, H, D, dx, dy, dz)
-    @all(qHx) = -D*@d_xi(H)/dx
-    @all(qHy) = -D*@d_yi(H)/dy
-    @all(qHz) = -D*@d_zi(H)/dz
+    @all(qHx) = -@av_xi(D)*@d_xi(H)/dx
+    @all(qHy) = -@av_yi(D)*@d_yi(H)/dy
+    @all(qHz) = -@av_zi(D)*@d_zi(H)/dz
     return
 end
 
@@ -27,14 +39,15 @@ end
 end
 
 @parallel function compute_update!(H, dHdt, dtau)
-    @inn(H) = @inn(H) + dtau*@all(dHdt)
+    @inn(H) = @inn(H) + @all(dtau)*@all(dHdt)
     return
 end
 
 @views function diffusion_3D(; nx=32, ny=32, nz=32, do_viz=false)
     # Physics
     lx, ly, lz = 10.0, 10.0, 10.0 # domain size
-    D          = 1.0              # diffusion coefficient
+    D1         = 1.0              # diffusion coefficient
+    D2         = 1e-4             # diffusion coefficient
     ttot       = 1.0              # total simulation time
     dt         = 0.2              # physical time step
     # Numerics
@@ -47,7 +60,6 @@ end
     # Derived numerics    
     damp       = 1-22/nx_g()      # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g()           # cell sizes
-    dtau       = (1.0/(min(dx,dy,dz)^2/D/6.1) + 1.0/dt)^-1 # iterative timestep
     xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
     # Array allocation
     qHx        = @zeros(nx-1,ny-2,nz-2)
@@ -55,12 +67,20 @@ end
     qHz        = @zeros(nx-2,ny-2,nz-1)
     dHdt       = @zeros(nx-2,ny-2,nz-2)
     ResH       = @zeros(nx-2,ny-2,nz-2)
+    dtau       = @zeros(nx-2,ny-2,nz-2)
     # Initial condition
-    H0         = zeros(nx, ny, nz)
+    H0         =   zeros(nx,ny,nz)
+    D          = D1*ones(nx,ny,nz)
+    Tmp        = [x_g(ix,dx,H0) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)]
+    D[Tmp.<lx/2.2] .= D2
+    Tmp        = [y_g(iy,dy,H0) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)]
+    D[Tmp.<ly/2.2] .= D2
+    D          = Data.Array(D)
     H0         = Data.Array([exp(-(x_g(ix,dx,H0)-0.5*lx+dx/2)*(x_g(ix,dx,H0)-0.5*lx+dx/2) - (y_g(iy,dy,H0)-0.5*ly+dy/2)*(y_g(iy,dy,H0)-0.5*ly+dy/2) - (z_g(iz,dz,H0)-0.5*lz+dz/2)*(z_g(iz,dz,H0)-0.5*lz+dz/2)) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)])
     Hold       = @ones(nx,ny,nz).*H0
     H          = @ones(nx,ny,nz).*H0
     len_ResH_g = ((nx-2-2)*dims[1]+2)*((ny-2-2)*dims[2]+2)*((nz-2-2)*dims[3]+2)
+    @parallel compute_dtau!(dtau, D, dt, dx, dy, dz)
     if do_viz
         ENV["GKSwstype"]="nul"
         nx_v, ny_v, nz_v = (nx-2)*dims[1], (ny-2)*dims[2], (nz-2)*dims[3]
@@ -94,7 +114,7 @@ end
         H_inn .= inn(H); gather!(H_inn, H_v)
         if (me==0)
             heatmap(Xi_g, Yi_g, H_v[:,:,z_sl]', dpi=150, aspect_ratio=1, framestyle=:box, xlims=(Xi_g[1],Xi_g[end]), ylims=(Yi_g[1],Yi_g[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="linear diffusion (nt=$it, iters=$ittot)")
-            savefig("../figures/diff3Dlin_$(nx_g()).png")
+            savefig("../figures/diff3Dlinstep_$(nx_g()).png")
         end
     end
     finalize_global_grid()
