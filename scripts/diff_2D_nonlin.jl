@@ -74,4 +74,4 @@ end
     return nx, ny, ittot
 end
 
-# diffusion_2D(; do_viz=true)
+# diffusion_2D(; nx=32, ny=32, do_viz=true)

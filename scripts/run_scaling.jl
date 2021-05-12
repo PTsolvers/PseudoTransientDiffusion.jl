@@ -42,7 +42,7 @@ end
 @views function runtests_2D(name; gen_data=false, do_save=false, do_viz=true)
     
     if gen_data
-        resol = 16 * 2 .^ (1:6)
+        resol = 16 * 2 .^ (1:4)
 
         out = zeros(3, length(resol))
 
@@ -66,7 +66,7 @@ end
 end
 
 # - Run tests ----------------------------------------------
-tests = "test_1D"
+tests = "test_2D"
 
 if tests=="test_1D"
     
@@ -75,7 +75,7 @@ if tests=="test_1D"
     for itest = 1:length(test_name)
         testfile = test_name[itest] * ".jl"; print(">--- "); println(testfile)
         include(testfile)
-        @time runtests_1D(test_name[itest]; gen_data=true, do_save=true)
+        @time runtests_1D(test_name[itest]; gen_data=false, do_save=false)
     end
 
 elseif tests=="test_2D"
@@ -85,7 +85,7 @@ elseif tests=="test_2D"
     for itest = 1:length(test_name)
         testfile = test_name[itest] * ".jl"; print(">--- "); println(testfile)
         include(testfile)
-        @time runtests_2D(test_name[itest];  gen_data=true, do_save=true)
+        @time runtests_2D(test_name[itest];  gen_data=false, do_save=false)
     end
 
 elseif tests=="test_3D"
