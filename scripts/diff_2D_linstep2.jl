@@ -15,18 +15,18 @@ using Plots, Printf, LinearAlgebra
 end
 
 @parallel function compute_dtauq!(dtauq, Re_opt, dmp, CFLdx, lx)
-    @all(dtauq)  = dmp*CFLdx*lx/@av(Re_opt)
+    @all(dtauq)  = dmp*CFLdx*lx/@all(Re_opt)
     return
 end
 
 @parallel function compute_dtauH!(dtauH, dtauq, CFLdx)
-    @all(dtauH)  = CFLdx^2/@av(dtauq) # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
+    @all(dtauH)  = CFLdx^2/@inn(dtauq) # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
     return
 end
 
 @parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, D, dtauq, dx, dy)
-    @all(qHx)  = (@all(qHx) - @av_ya(dtauq)*@d_xi(H)/dx)/(1.0 + @av_ya(dtauq)/@av_xi(D))
-    @all(qHy)  = (@all(qHy) - @av_xa(dtauq)*@d_yi(H)/dy)/(1.0 + @av_xa(dtauq)/@av_yi(D))
+    @all(qHx)  = (@all(qHx) - @av_xi(dtauq)*@d_xi(H)/dx)/(1.0 + @av_xi(dtauq)/@av_xi(D))
+    @all(qHy)  = (@all(qHy) - @av_yi(dtauq)*@d_yi(H)/dy)/(1.0 + @av_yi(dtauq)/@av_yi(D))
     @all(qHx2) = -@av_xi(D)*@d_xi(H)/dx
     @all(qHy2) = -@av_yi(D)*@d_yi(H)/dy
     return
@@ -66,7 +66,7 @@ end
     qHy2    = @zeros(nx-2,ny-1)
     ResH    = @zeros(nx-2,ny-2)
     Re_opt  = @zeros(nx  ,ny  )
-    dtauq   = @zeros(nx-1,ny-1)
+    dtauq   = @zeros(nx  ,ny  )
     dtauH   = @zeros(nx-2,ny-2)
     # Initial condition
     D       = D1*@ones(nx,ny)

@@ -11,18 +11,16 @@ using Plots, Printf, LinearAlgebra
 macro innH3()   esc(:( @inn(H)*@inn(H)*@inn(H) )) end
 macro av_xiH3() esc(:( @av_xi(H)*@av_xi(H)*@av_xi(H) )) end
 macro av_yiH3() esc(:( @av_yi(H)*@av_yi(H)*@av_yi(H) )) end
-macro av_xaH3() esc(:( @av_xa(H)*@av_xa(H)*@av_xa(H) )) end
-macro av_yaH3() esc(:( @av_ya(H)*@av_ya(H)*@av_ya(H) )) end
-macro Re_opt()  esc(:( π + sqrt(π^2 + (lx/@innH3())^2) )) end
-macro av_ya_Re_opt() esc(:( π + sqrt(π^2 + (lx/@av_yaH3())^2) )) end
-macro av_xa_Re_opt() esc(:( π + sqrt(π^2 + (lx/@av_xaH3())^2) )) end
-macro av_ya_dtauq()  esc(:( dmp*CFLdx*lx/@av_ya_Re_opt() )) end
-macro av_xa_dtauq()  esc(:( dmp*CFLdx*lx/@av_xa_Re_opt() )) end
-macro dtauH()   esc(:( CFLdx^2/(dmp*CFLdx*lx/@Re_opt())  )) end # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
+macro av_xi_Re_opt() esc(:( π + sqrt(π^2 + (lx/@av_xiH3())^2) )) end
+macro av_yi_Re_opt() esc(:( π + sqrt(π^2 + (lx/@av_yiH3())^2) )) end
+macro av_xi_dtauq()  esc(:( dmp*CFLdx*lx/@av_xi_Re_opt() )) end
+macro av_yi_dtauq()  esc(:( dmp*CFLdx*lx/@av_yi_Re_opt() )) end
+macro Re_opt()  esc(:( π + sqrt(π^2 + (lx/@innH3())^2)  )) end
+macro dtauH()   esc(:( CFLdx^2/(dmp*CFLdx*lx/@Re_opt()) )) end # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
 
 @parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, dmp, CFLdx, lx, dx, dy)
-    @all(qHx)  = (@all(qHx) - @av_ya_dtauq()*@d_xi(H)/dx)/(1.0 + @av_ya_dtauq()/@av_xiH3())
-    @all(qHy)  = (@all(qHy) - @av_xa_dtauq()*@d_yi(H)/dy)/(1.0 + @av_xa_dtauq()/@av_yiH3())
+    @all(qHx)  = (@all(qHx) - @av_xi_dtauq()*@d_xi(H)/dx)/(1.0 + @av_xi_dtauq()/@av_xiH3())
+    @all(qHy)  = (@all(qHy) - @av_yi_dtauq()*@d_yi(H)/dy)/(1.0 + @av_yi_dtauq()/@av_yiH3())
     @all(qHx2) = -@av_xiH3()*@d_xi(H)/dx
     @all(qHy2) = -@av_yiH3()*@d_yi(H)/dy
     return
