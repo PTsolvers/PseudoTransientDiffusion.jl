@@ -53,6 +53,11 @@ dH/dt = -(dqHx/dx + dqHy/dy + dqHz/dz)
 - The [`diff_2D_nonlin2.jl`](scripts/diff_2D_nonlin2.jl) scripts solves the nonlinear (`D=H^3`) [2D diffusion equation](#the-2d-diffusion) including a new convergence acceleration.
 ---
 - The [`diff_3D_lin.jl`](scripts/diff_3D_lin.jl) scripts solves the linear (`D=1`) [3D diffusion equation](#the-3d-diffusion) including damping to accelerate convergence.
+- The [`diff_3D_lin2.jl`](scripts/diff_3D_lin2.jl) scripts solves the linear (`D=1`) [3D diffusion equation](#the-3d-diffusion) including a new convergence acceleration.
+- The [`diff_3D_linstep.jl`](scripts/diff_3D_linstep.jl) scripts solves the [3D diffusion equation](#the-3d-diffusion) with a 1e4 contrast in values of the diffusion coefficient including damping to accelerate convergence.
+- The [`diff_3D_linstep2.jl`](scripts/diff_3D_linstep2.jl) scripts solves the [3D diffusion equation](#the-3d-diffusion) with a 1e4 contrast in values of the diffusion coefficient including a new convergence acceleration.
+- The [`diff_3D_nonlin.jl`](scripts/diff_3D_nonlin.jl) scripts solves the nonlinear (`D=H^3`) [3D diffusion equation](#the-3d-diffusion) including damping to accelerate convergence.
+- The [`diff_3D_nonlin2.jl`](scripts/diff_3D_nonlin2.jl) scripts solves the nonlinear (`D=H^3`) [3D diffusion equation](#the-3d-diffusion) including a new convergence acceleration.
 ---
 - The `perf_diff_2D_nonlin_perfcompare_xx.jl` scripts solve the nonlinear [2D diffusion equation](#the-2d-diffusion) are used to generate the following figure (used in the [ParallelStencil.jl] repo):
 
