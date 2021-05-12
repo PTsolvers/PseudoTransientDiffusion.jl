@@ -111,8 +111,9 @@ end
             savefig("../figures/diff3Dlinstep_$(nx_g()).png")
         end
     end
+    nxg, nyg, nzg = nx_g(), ny_g(), nz_g()
     finalize_global_grid()
-    return nx_g(), ny_g(), nz_g(), ittot
+    return nxg, nyg, nzg, ittot
 end
 
 # diffusion_3D(; nx=64, ny=64, nz=64, do_viz=true)

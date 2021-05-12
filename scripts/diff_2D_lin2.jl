@@ -50,7 +50,6 @@ end
     qHy     = @zeros(nx-2,ny-1)
     qHx2    = @zeros(nx-1,ny-2)
     qHy2    = @zeros(nx-2,ny-1)
-    dHdt    = @zeros(nx-2,ny-2)
     ResH    = @zeros(nx-2,ny-2)
     # Initial condition
     H0      = Data.Array( exp.(-(xc.-lx/2).^2 .-(yc'.-ly/2).^2) )
