@@ -59,15 +59,15 @@ dH/dt = -(dqHx/dx + dqHy/dy + dqHz/dz)
 ![](docs/perf_ps2.png)
 
 ## Results
-Scaling analysis - iteration count normalised by grid resolution in x direction (`nx`) as function of `nx` for
+Scaling analysis - iteration count normalised by grid resolution in x direction (`nx`) as function of `nx` comparing
 
-- the [2D linear diffusion equation](#the-2d-diffusion) using damping
+- the linear 1D and 2D diffusion equation using damping and new damping `2` approach:
 
-![](docs/scale_diff_2D_lin.png)
+![](docs/diff_1D_2D_linear.png)
 
-- the [2D linear diffusion equation](#the-2d-diffusion) using the new damping approach
+- the nonlinear (`D=H^3`) 1D and 2D diffusion equation using damping and new damping `2` approach:
 
-![](docs/scale_diff_2D_lin2.png)
+![](docs/diff_1D_2D_nonlinear.png)
 
 ## References
 [Frankel, S. P. (1950). Convergence rates of iterative treatments of partial differential equations, Mathe. Tables Other Aids Comput., 4, 65–75.](https://doi.org/10.2307/2002770)
