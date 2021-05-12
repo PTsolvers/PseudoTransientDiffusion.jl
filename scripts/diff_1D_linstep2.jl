@@ -82,8 +82,11 @@ end
         while err>tol && iter<itMax
             @parallel compute_flux!(qHx, qHx2, H, D, dtauq, dx)
             @parallel compute_update!(H, Hold, qHx, dtauH, dt, dx)
-            @parallel check_res!(ResH, H, Hold, qHx2, dt, dx)
-            iter += 1; if (iter % nout == 0)  err = norm(ResH)/length(ResH)  end
+            iter += 1
+            if iter % nout == 0
+                @parallel check_res!(ResH, H, Hold, qHx2, dt, dx)
+                err = norm(ResH)/length(ResH)
+            end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
@@ -91,7 +94,7 @@ end
     end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
-    if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion (nt=$it, iters=$ittot)")) end
+    if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear step diffusion (nt=$it, iters=$ittot)")) end
     return nx, ittot
 end
 

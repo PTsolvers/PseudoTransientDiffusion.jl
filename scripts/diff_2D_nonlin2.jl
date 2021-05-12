@@ -71,8 +71,11 @@ end
         while err>tol && iter<itMax
             @parallel compute_flux!(qHx, qHy, qHx2, qHy2, H, dmp, CFLdx, lx, dx, dy)
             @parallel compute_update!(H, Hold, qHx, qHy, dt, dmp, CFLdx, lx, dx, dy)
-            @parallel check_res!(ResH, H, Hold, qHx2, qHy2, dt, dx, dy)
-            iter += 1; if (iter % nout == 0)  err = norm(ResH)/length(ResH)  end
+            iter += 1
+            if iter % nout == 0
+                @parallel check_res!(ResH, H, Hold, qHx2, qHy2, dt, dx, dy)
+                err = norm(ResH)/length(ResH)
+            end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
