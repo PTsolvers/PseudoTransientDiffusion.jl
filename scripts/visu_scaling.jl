@@ -25,14 +25,19 @@ end
 # test_name = ("diff_2D_linstep", "diff_2D_linstep2",)
 # test_name = ("diff_2D_nonlin", "diff_2D_nonlin2",)
 
-# test_name = ("diff_1D_lin", "diff_2D_lin",)
-# test_name = ("diff_1D_lin2", "diff_2D_lin2",)
-# test_name = ("diff_1D_linstep", "diff_2D_linstep",)
-# test_name = ("diff_1D_linstep2", "diff_2D_linstep2",)
-# test_name = ("diff_1D_nonlin", "diff_2D_nonlin",)
-# test_name = ("diff_1D_nonlin2", "diff_2D_nonlin2",)
+# test_name = ("diff_3D_lin", "diff_3D_lin2",)
+# test_name = ("diff_3D_linstep", "diff_3D_linstep2",)
+# test_name = ("diff_3D_nonlin", "diff_3D_nonlin2",)
 
-test_name = ("diff_1D_nonlin", "diff_2D_nonlin","diff_1D_nonlin2", "diff_2D_nonlin2",)
+# test_name = ("diff_1D_lin", "diff_2D_lin", "diff_3D_lin",)
+# test_name = ("diff_1D_lin2", "diff_2D_lin2", "diff_3D_lin2",)
+# test_name = ("diff_1D_linstep", "diff_2D_linstep", "diff_3D_linstep",)
+# test_name = ("diff_1D_linstep2", "diff_2D_linstep2", "diff_3D_linstep2",)
+# test_name = ("diff_1D_nonlin", "diff_2D_nonlin", "diff_3D_nonlin",)
+# test_name = ("diff_1D_nonlin2", "diff_2D_nonlin2","diff_3D_nonlin2",)
+
+# test_name = ("diff_1D_lin", "diff_2D_lin", "diff_3D_lin", "diff_1D_lin2", "diff_2D_lin2", "diff_3D_lin2",)
+test_name = ("diff_1D_nonlin", "diff_2D_nonlin", "diff_3D_nonlin", "diff_1D_nonlin2", "diff_2D_nonlin2", "diff_3D_nonlin2",)
 
 for iviz = 1:length(test_name)
     
@@ -47,4 +52,4 @@ end
 
 # savefig("../figures/fig_$(test_name[1]).png")
 
-# savefig("../figures/fig_1D_2D_$(test_name[1]).png")
+# savefig("../figures/fig_123D_$(test_name[1]).png")
