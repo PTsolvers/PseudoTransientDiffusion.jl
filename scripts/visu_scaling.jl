@@ -43,6 +43,8 @@ for iviz = 1:length(test_name)
     vizualise(out, name, iviz)
 end
 
+# !ispath("../figures") && mkdir("../figures")
+
 # savefig("../figures/fig_$(test_name[1]).png")
 
 # savefig("../figures/fig_1D_2D_$(test_name[1]).png")
