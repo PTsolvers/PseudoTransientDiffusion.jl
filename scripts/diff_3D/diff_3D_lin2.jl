@@ -53,7 +53,6 @@ end
     Re_opt     = π + sqrt(π^2 + (lx/D)^2)
     dtauq      = dmp*CFLdx*lx/Re_opt
     dtauH      = CFLdx^2/dtauq # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
-    xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
     # Array allocation
     qHx        = @zeros(nx-1,ny-2,nz-2)
     qHy        = @zeros(nx-2,ny-1,nz-2)

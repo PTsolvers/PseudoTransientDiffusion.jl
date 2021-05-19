@@ -62,7 +62,6 @@ end
     dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g() # cell sizes
     dmp        = 4.5
     CFLdx      = 0.5*dx # instead of 0.7 (2D, 1D)
-    xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
     # Array allocation
     qHx        = @zeros(nx-1,ny-2,nz-2)
     qHy        = @zeros(nx-2,ny-1,nz-2)

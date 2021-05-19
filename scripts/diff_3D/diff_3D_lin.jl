@@ -48,7 +48,6 @@ end
     damp       = 1-18/nx_g()      # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g()           # cell sizes
     dtau       = (1.0/(min(dx,dy,dz)^2/D/6.1) + 1.0/dt)^-1 # iterative timestep
-    xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
     # Array allocation
     qHx        = @zeros(nx-1,ny-2,nz-2)
     qHy        = @zeros(nx-2,ny-1,nz-2)
