@@ -149,6 +149,7 @@ end
     end
 
     MPI.Finalize()
+    return
 end
 
 runtests_3D("diff_3D_nonlin2"; do_save=true)

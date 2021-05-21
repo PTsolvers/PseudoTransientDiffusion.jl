@@ -144,6 +144,7 @@ end
     end
 
     MPI.Finalize()
+    return
 end
 
 runtests_3D("diff_3D_linstep"; do_save=true)
