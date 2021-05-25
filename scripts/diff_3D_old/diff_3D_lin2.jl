@@ -1,10 +1,4 @@
-const USE_GPU = parse(Bool, ENV["USE_GPU"])
-const do_viz  = parse(Bool, ENV["DO_VIZ"])
-const do_save = parse(Bool, ENV["DO_SAVE"])
-const nx = parse(Int, ENV["NX"])
-const ny = parse(Int, ENV["NY"])
-const nz = parse(Int, ENV["NZ"])
-###
+const USE_GPU = true
 using ParallelStencil
 using ParallelStencil.FiniteDifferences3D
 @static if USE_GPU
@@ -19,54 +13,56 @@ norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WO
 
 @views inn(A) = A[2:end-1,2:end-1,2:end-1]
 
-macro innH3()   esc(:( @inn(H)*@inn(H)*@inn(H) )) end
-macro av_xiH3() esc(:( @av_xi(H)*@av_xi(H)*@av_xi(H) )) end
-macro av_yiH3() esc(:( @av_yi(H)*@av_yi(H)*@av_yi(H) )) end
-macro av_ziH3() esc(:( @av_zi(H)*@av_zi(H)*@av_zi(H) )) end
-macro dtau()    esc(:( 1.0/(1.0/(min(dx,dy, dz)^2 ./@innH3()/6.1) + 1.0/dt) )) end
-
-@parallel function compute_flux!(qHx, qHy, qHz, H, dx, dy, dz)
-    @all(qHx) = -@av_xiH3()*@d_xi(H)/dx
-    @all(qHy) = -@av_yiH3()*@d_yi(H)/dy
-    @all(qHz) = -@av_ziH3()*@d_zi(H)/dz
+@parallel function compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, dtauq, dx, dy, dz)
+    @all(qHx)  = (@all(qHx) - dtauq*@d_xi(H)/dx)/(1.0 + dtauq/D)
+    @all(qHy)  = (@all(qHy) - dtauq*@d_yi(H)/dy)/(1.0 + dtauq/D)
+    @all(qHz)  = (@all(qHz) - dtauq*@d_zi(H)/dz)/(1.0 + dtauq/D)
+    @all(qHx2) = -D*@d_xi(H)/dx
+    @all(qHy2) = -D*@d_yi(H)/dy
+    @all(qHz2) = -D*@d_zi(H)/dz
     return
 end
 
-@parallel function compute_rate!(ResH, dHdt, H, Hold, qHx, qHy, qHz, dt, damp, dx, dy, dz)
-    @all(ResH) = -(@inn(H) - @inn(Hold))/dt - (@d_xa(qHx)/dx + @d_ya(qHy)/dy + @d_za(qHz)/dz)
-    @all(dHdt) = @all(ResH) + damp*@all(dHdt)
+@parallel function compute_update!(H, Hold, qHx, qHy, qHz, dtauH, dt, dx, dy, dz)
+    @inn(H) = (@inn(H) + dtauH*(@inn(Hold)/dt - (@d_xa(qHx)/dx + @d_ya(qHy)/dy + @d_za(qHz)/dz)))/(1.0 + dtauH/dt)
     return
 end
 
-@parallel function compute_update!(H, dHdt, dt, dx, dy, dz)
-    @inn(H) = @inn(H) + @dtau()*@all(dHdt)
+@parallel function check_res!(ResH, H, Hold, qHx2, qHy2, qHz2, dt, dx, dy, dz)
+    @all(ResH) = -(@inn(H)-@inn(Hold))/dt - (@d_xa(qHx2)/dx + @d_ya(qHy2)/dy + @d_za(qHz2)/dz)
     return
 end
 
-@views function diffusion_3D()
+@views function diffusion_3D(; nx=32, ny=32, nz=32, MPI_ini_fin=true, do_viz=false)
     # Physics
     lx, ly, lz = 10.0, 10.0, 10.0 # domain size
+    D          = 1.0              # diffusion coefficient
     ttot       = 1.0              # total simulation time
     dt         = 0.2              # physical time step
     # Numerics
     tol        = 1e-8             # tolerance
     itMax      = 1e5              # max number of iterations
     nout       = 10               # tol check
-    me, dims   = init_global_grid(nx, ny, nz) # MPI initialisation
+    me, dims   = init_global_grid(nx, ny, nz; init_MPI=MPI_ini_fin) # MPI initialisation
     @static if USE_GPU select_device() end    # select one GPU per MPI local rank (if >1 GPU per node)
     b_width    = (8, 4, 4)       # boundary width for comm/comp overlap
     # Derived numerics    
-    damp       = 1-22/nx_g()      # damping (this is a tuning parameter, dependent on e.g. grid resolution)
-    dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g()  # cell sizes
-    xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
+    dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g() # cell sizes
+    dmp        = 4.5
+    CFLdx      = 0.5*dx # instead of 0.7 (2D, 1D)
+    Re_opt     = π + sqrt(π^2 + (lx/D)^2)
+    dtauq      = dmp*CFLdx*lx/Re_opt
+    dtauH      = CFLdx^2/dtauq # dtauH*dtauq = CFL^2*dx^2 -> dt < CFL*dx/Vsound
     # Array allocation
     qHx        = @zeros(nx-1,ny-2,nz-2)
     qHy        = @zeros(nx-2,ny-1,nz-2)
     qHz        = @zeros(nx-2,ny-2,nz-1)
-    dHdt       = @zeros(nx-2,ny-2,nz-2)
+    qHx2       = @zeros(nx-1,ny-2,nz-2)
+    qHy2       = @zeros(nx-2,ny-1,nz-2)
+    qHz2       = @zeros(nx-2,ny-2,nz-1)
     ResH       = @zeros(nx-2,ny-2,nz-2)
     # Initial condition
-    H0         = zeros(nx,ny,nz)
+    H0         = zeros(nx, ny, nz)
     H0         = Data.Array([exp(-(x_g(ix,dx,H0)-0.5*lx+dx/2)*(x_g(ix,dx,H0)-0.5*lx+dx/2) - (y_g(iy,dy,H0)-0.5*ly+dy/2)*(y_g(iy,dy,H0)-0.5*ly+dy/2) - (z_g(iz,dz,H0)-0.5*lz+dz/2)*(z_g(iz,dz,H0)-0.5*lz+dz/2)) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)])
     Hold       = @ones(nx,ny,nz).*H0
     H          = @ones(nx,ny,nz).*H0
@@ -86,13 +82,16 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, qHy, qHz, H, dx, dy, dz)
-            @parallel compute_rate!(ResH, dHdt, H, Hold, qHx, qHy, qHz, dt, damp, dx, dy, dz)
+            @parallel compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, dtauq, dx, dy, dz)
             @hide_communication b_width begin # communication/computation overlap
-                @parallel compute_update!(H, dHdt, dt, dx, dy, dz)
+                @parallel compute_update!(H, Hold, qHx, qHy, qHz, dtauH, dt, dx, dy, dz)
                 update_halo!(H)
             end
-            iter += 1; if (iter % nout == 0)  err = norm_g(ResH)/len_ResH_g  end
+            iter += 1
+            if iter % nout == 0
+                @parallel check_res!(ResH, H, Hold, qHx2, qHy2, qHz2, dt, dx, dy, dz)
+                err = norm_g(ResH)/len_ResH_g
+            end
         end
         ittot += iter; it += 1; t += dt
         Hold .= H
@@ -103,18 +102,45 @@ end
     if do_viz 
         H_inn .= inn(H); gather!(H_inn, H_v)
         if me==0
-            heatmap(Xi_g, Yi_g, H_v[:,:,z_sl]', dpi=150, aspect_ratio=1, framestyle=:box, xlims=(Xi_g[1],Xi_g[end]), ylims=(Yi_g[1],Yi_g[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="nonlinear diffusion (nt=$it, iters=$ittot)")
-            savefig("../../figures/diff3Dnonlin_$(nx_g()).png")
+            heatmap(Xi_g, Yi_g, H_v[:,:,z_sl]', dpi=150, aspect_ratio=1, framestyle=:box, xlims=(Xi_g[1],Xi_g[end]), ylims=(Yi_g[1],Yi_g[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="linear diffusion (nt=$it, iters=$ittot)")
+            savefig("../../figures/diff3Dlin2_$(nx_g()).png")
         end
     end
-    if me==0 && do_save
+    nxg, nyg, nzg = nx_g(), ny_g(), nz_g()
+    finalize_global_grid(; finalize_MPI=MPI_ini_fin)
+    return nxg, nyg, nzg, ittot, me
+end
+
+# diffusion_3D(; nx=128, ny=128, nz=128, do_viz=true)
+
+@views function runtests_3D(name; do_save=false)
+
+    resol = 16 * 2 .^ (1:5)
+
+    out = zeros(4, length(resol))
+    me  = 0
+    
+    MPI.Init()
+    
+    for i = 1:length(resol)
+
+        res = resol[i]
+
+        nxx, nyy, nzz, iter, me = diffusion_3D(; nx=res, ny=res, nz=res, MPI_ini_fin=false)
+
+        out[1,i] = nxx
+        out[2,i] = nyy
+        out[3,i] = nzz
+        out[4,i] = iter
+    end
+
+    if do_save && me==0
         !ispath("../../output") && mkdir("../../output")
-        open("../../output/out_diff_3D_nonlin.txt","a") do io
-            println(io, "$(nx_g()) $(ny_g()) $(nz_g()) $(ittot)")
-        end
+        save("../../output/out_$(name).jld", "out", out)
     end
-    finalize_global_grid()
+
+    MPI.Finalize()
     return
 end
 
-diffusion_3D()
+runtests_3D("diff_3D_lin2"; do_save=true)

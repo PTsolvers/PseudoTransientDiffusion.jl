@@ -1,10 +1,4 @@
-const USE_GPU = parse(Bool, ENV["USE_GPU"])
-const do_viz  = parse(Bool, ENV["DO_VIZ"])
-const do_save = parse(Bool, ENV["DO_SAVE"])
-const nx = parse(Int, ENV["NX"])
-const ny = parse(Int, ENV["NY"])
-const nz = parse(Int, ENV["NZ"])
-###
+const USE_GPU = true
 using ParallelStencil
 using ParallelStencil.FiniteDifferences3D
 @static if USE_GPU
@@ -55,7 +49,7 @@ end
     return
 end
 
-@views function diffusion_3D()
+@views function diffusion_3D(; nx=32, ny=32, nz=32, MPI_ini_fin=true, do_viz=false)
     # Physics
     lx, ly, lz = 10.0, 10.0, 10.0 # domain size
     D1         = 1.0              # diffusion coefficient
@@ -66,14 +60,13 @@ end
     tol        = 1e-8             # tolerance
     itMax      = 1e5              # max number of iterations
     nout       = 10               # tol check
-    me, dims   = init_global_grid(nx, ny, nz) # MPI initialisation
+    me, dims   = init_global_grid(nx, ny, nz; init_MPI=MPI_ini_fin) # MPI initialisation
     @static if USE_GPU select_device() end    # select one GPU per MPI local rank (if >1 GPU per node)
     b_width    = (8, 4, 4)       # boundary width for comm/comp overlap
     # Derived numerics    
     dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g() # cell sizes
     dmp        = 4.5
     CFLdx      = 0.5*dx # instead of 0.7 (2D, 1D)
-    xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
     # Array allocation
     qHx        = @zeros(nx-1,ny-2,nz-2)
     qHy        = @zeros(nx-2,ny-1,nz-2)
@@ -142,14 +135,41 @@ end
             savefig("../../figures/diff3Dlinstep2_$(nx_g()).png")
         end
     end
-    if me==0 && do_save
-        !ispath("../../output") && mkdir("../../output")
-        open("../../output/out_diff_3D_linstep2.txt","a") do io
-            println(io, "$(nx_g()) $(ny_g()) $(nz_g()) $(ittot)")
-        end
+    nxg, nyg, nzg = nx_g(), ny_g(), nz_g()
+    finalize_global_grid(; finalize_MPI=MPI_ini_fin)
+    return nxg, nyg, nzg, ittot, me
+end
+
+# diffusion_3D(; nx=128, ny=128, nz=128, do_viz=false)
+
+@views function runtests_3D(name; do_save=false)
+
+    resol = 16 * 2 .^ (1:5)
+
+    out = zeros(4, length(resol))
+    me  = 0
+    
+    MPI.Init()
+    
+    for i = 1:length(resol)
+
+        res = resol[i]
+
+        nxx, nyy, nzz, iter, me = diffusion_3D(; nx=res, ny=res, nz=res, MPI_ini_fin=false)
+
+        out[1,i] = nxx
+        out[2,i] = nyy
+        out[3,i] = nzz
+        out[4,i] = iter
     end
-    finalize_global_grid()
+
+    if do_save && me==0
+        !ispath("../../output") && mkdir("../../output")
+        save("../../output/out_$(name).jld", "out", out)
+    end
+
+    MPI.Finalize()
     return
 end
 
-diffusion_3D()
+runtests_3D("diff_3D_linstep2"; do_save=true)
