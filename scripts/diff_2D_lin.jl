@@ -35,7 +35,7 @@ end
     # nx     = 2*256       # numerical grid resolution
     tol     = 1e-8         # tolerance
     itMax   = 1e5          # max number of iterations
-    nout    = 10           # tol check
+    nout    = 10           # tolerance check
     damp    = 1-22/nx      # damping (this is a tuning parameter, dependent on e.g. grid resolution)
     # Derived numerics
     dx, dy  = lx/nx, ly/ny # grid size
