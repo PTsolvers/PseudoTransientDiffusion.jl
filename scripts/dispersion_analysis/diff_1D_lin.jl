@@ -14,9 +14,9 @@ using Plots, Printf, LinearAlgebra
     return
 end
 
-@parallel function compute_update1!(H, Hold, qHx, dHdt, ρ, τr, dt, dx)
-    @all(dHdt) = (@all(dHdt) * ρ * τr - @d(qHx) / dx - (@inn(H) - @inn(Hold)) / dt) / (ρ * τr + τr / dt + ρ)
-    @inn(H)    = @inn(H) + @all(dHdt)
+@parallel function compute_update1!(H, Hold, qHx, dH, ρ, τr, dt, dx)
+    @all(dH) = (@all(dH) * ρ * τr - @d(qHx) / dx - (@inn(H) - @inn(Hold)) / dt) / (ρ * τr + τr / dt + ρ)
+    @inn(H)    = @inn(H) + @all(dH)
     return
 end
 
@@ -59,7 +59,7 @@ end
     qHx    = @zeros(nx - 1)
     qHx2   = @zeros(nx - 1)
     ResH   = @zeros(nx - 2)
-    dHdt   = @zeros(nx - 2);
+    dH     = @zeros(nx - 2);
     # Initial condition
     H0     = Data.Array(exp.(-xc.^2 / D))
     Hold   = @ones(nx) .* H0
@@ -72,7 +72,7 @@ end
         while err > tol && iter < itMax
             if accel == 1
                 @parallel compute_flux1!(qHx, qHx2, H, D, dx)
-                @parallel compute_update1!(H, Hold, qHx, dHdt, ρ, τr, dt, dx)
+                @parallel compute_update1!(H, Hold, qHx, dH, ρ, τr, dt, dx)
             else
                 @parallel compute_flux2!(qHx, qHx2, H, D, τr, dx)
                 @parallel compute_update2!(H, Hold, qHx, ρ, dt, dx)
