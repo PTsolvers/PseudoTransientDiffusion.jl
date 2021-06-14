@@ -16,7 +16,7 @@ end
 
 @parallel function compute_update1!(H, Hold, qHx, dH, ρ, τr, dt, dx)
     @all(dH) = (@all(dH) * ρ * τr - @d(qHx) / dx - (@inn(H) - @inn(Hold)) / dt) / (ρ * τr + τr / dt + ρ)
-    @inn(H)    = @inn(H) + @all(dH)
+    @inn(H)  = @inn(H) + @all(dH)
     return
 end
 
