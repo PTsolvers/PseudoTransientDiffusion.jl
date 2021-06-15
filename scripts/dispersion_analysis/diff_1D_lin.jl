@@ -40,8 +40,8 @@ end
     # Physics
     lx     = 20.0       # domain size
     D      = 1          # diffusion coefficient
-    ttot   = 1          # total simulation time
-    dt     = 0.1        # physical time step
+    ttot   = 1.0        # total simulation time
+    dt     = 0.2        # physical time step
     # Numerics
     # nx     = 2*256      # numerical grid resolution
     tol    = 1e-8       # tolerance
@@ -52,14 +52,14 @@ end
     dx     = lx / nx      # grid size
     CFLdx  = 1.0 * dx
     dmp    = π + sqrt(π^2 + (lx^2 / D / dt))
-    τr     = lx / CFLdx / dmp;
-    ρ      = D * dmp / lx / CFLdx;
+    τr     = lx / CFLdx / dmp
+    ρ      = D * dmp / lx / CFLdx
     xc     = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
     qHx    = @zeros(nx - 1)
     qHx2   = @zeros(nx - 1)
     ResH   = @zeros(nx - 2)
-    dH     = @zeros(nx - 2);
+    dH     = @zeros(nx - 2)
     # Initial condition
     H0     = Data.Array(exp.(-xc.^2 / D))
     Hold   = @ones(nx) .* H0
