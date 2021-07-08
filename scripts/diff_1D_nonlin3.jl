@@ -10,12 +10,12 @@ using Plots, Printf, LinearAlgebra
 
 macro innH3()    esc(:( @inn(H) * @inn(H) * @inn(H)          )) end
 macro avH3()     esc(:( @av(H) * @av(H) * @av(H)             )) end
-macro avRe()     esc(:( π + sqrt(π^2 + (lx / @avH3())^2)   )) end
-macro Re()       esc(:( π + sqrt(π^2 + (lx / @innH3())^2)  )) end
-macro τr_dt()    esc(:( lx / Vpdt / @avRe()              )) end
-macro dt_ρ()     esc(:( Vpdt * lx / @innH3() / @Re()     )) end
+macro avRe()     esc(:( π + sqrt(π^2 + lx^2 / @avH3() / dt)  )) end
+macro Re()       esc(:( π + sqrt(π^2 + lx^2 / @innH3() / dt) )) end
+macro τr_dt()    esc(:( lx / Vpdt / @avRe()                  )) end
+macro dt_ρ()     esc(:( Vpdt * lx / @innH3() / @Re()         )) end
 
-@parallel function compute_flux!(qHx, qHx2, H, Vpdt, lx, dx)
+@parallel function compute_flux!(qHx, qHx2, H, Vpdt, dt, lx, dx)
     @all(qHx)  = (@all(qHx) * @τr_dt() - @avH3() * @d(H) / dx) / (1.0 + @τr_dt())
     @all(qHx2) = -@avH3() * @d(H) / dx
     return
@@ -60,7 +60,7 @@ end
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err > tol && iter < itMax
-            @parallel compute_flux!(qHx, qHx2, H, Vpdt, lx, dx)
+            @parallel compute_flux!(qHx, qHx2, H, Vpdt, dt, lx, dx)
             @parallel compute_update!(H, Hold, qHx, Vpdt, dt, lx, dx)
             iter += 1
             if iter % nout == 0
