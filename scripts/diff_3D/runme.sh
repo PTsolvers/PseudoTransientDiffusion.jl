@@ -4,7 +4,7 @@
 
 mpirun_=$(which mpirun)
 
-RESOL=( 32 64 127 256 512 )
+RESOL=( 32 64 128 256 512 )
 
 declare -a RUN=( "diff_3D_lin" "diff_3D_lin2" "diff_3D_linstep" "diff_3D_linstep2" "diff_3D_nonlin" "diff_3D_nonlin2" )
 
