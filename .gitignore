@@ -1,7 +1,4 @@
 .DS_Store
 Manifest.toml
-/output
-/figures
-/misc
-/visu
-
+/out_visu
+/gitignore
