@@ -1,4 +1,10 @@
-const USE_GPU = false
+const USE_GPU = parse(Bool, ENV["USE_GPU"])
+const do_viz  = parse(Bool, ENV["DO_VIZ"])
+const do_save = parse(Bool, ENV["DO_SAVE"])
+const do_save_viz = parse(Bool, ENV["DO_SAVE_VIZ"])
+const nx = parse(Int, ENV["NX"])
+const ny = parse(Int, ENV["NY"])
+###
 using ParallelStencil
 using ParallelStencil.FiniteDifferences2D
 @static if USE_GPU
@@ -6,16 +12,16 @@ using ParallelStencil.FiniteDifferences2D
 else
     @init_parallel_stencil(Threads, Float64, 2)
 end
-using Plots, Printf, LinearAlgebra
+using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_Re!(Re, D, lx, dt)
-    @inn(Re) = π + sqrt(π^2 + (lx^2 / @maxloc(D) / dt))
+@parallel function compute_Re!(Re, D, max_lxy, dt)
+    @inn(Re) = π + sqrt(π^2 + (max_lxy^2 / @maxloc(D) / dt))
     return
 end
 
-@parallel function compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, lx)
-    @all(τr_dt) = lx / Vpdt / @all(Re)
-    @all(dt_ρ)  = Vpdt * lx / @maxloc(D) / @inn(Re)
+@parallel function compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, max_lxy)
+    @all(τr_dt) = max_lxy / Vpdt / @all(Re)
+    @all(dt_ρ)  = Vpdt * max_lxy / @maxloc(D) / @inn(Re)
     return
 end
 
@@ -42,7 +48,19 @@ end
     return
 end
 
-@views function diffusion_2D(; nx=512, ny=512, do_viz=false)
+@parallel_indices (iy) function bc_x!(A)
+    A[1  , iy] = A[2    , iy]
+    A[end, iy] = A[end-1, iy]
+    return
+end
+
+@parallel_indices (ix) function bc_y!(A)
+    A[ix, 1  ] = A[ix, 2    ]
+    A[ix, end] = A[ix, end-1]
+    return
+end
+
+@views function diffusion_2D()
     # Physics
     lx, ly  = 10.0, 10.0    # domain size
     D1      = 1.0           # diffusion coefficient
@@ -50,7 +68,7 @@ end
     ttot    = 1.0           # total simulation time
     dt      = 0.2           # physical time step
     # Numerics
-    # nx     = 2*256        # numerical grid resolution
+    # nx, ny  = 2*256, 2*256  # numerical grid resolution
     tol     = 1e-8          # tolerance
     itMax   = 1e5           # max number of iterations
     nout    = 10            # tol check
@@ -58,16 +76,17 @@ end
     # Derived numerics
     dx, dy  = lx / nx, ly / ny  # grid size    
     Vpdt    = CFL * min(dx, dy)
+    max_lxy = max(lx, ly)
     xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
     # Array allocation
-    qHx     = @zeros(nx - 1,ny - 2)
-    qHy     = @zeros(nx - 2,ny - 1)
-    qHx2    = @zeros(nx - 1,ny - 2)
-    qHy2    = @zeros(nx - 2,ny - 1)
-    ResH    = @zeros(nx - 2,ny - 2)
-    Re      = @zeros(nx    ,ny    )
-    τr_dt   = @zeros(nx    ,ny    )
-    dt_ρ    = @zeros(nx - 2,ny - 2)
+    qHx     = @zeros(nx-1, ny-2)
+    qHy     = @zeros(nx-2, ny-1)
+    qHx2    = @zeros(nx-1, ny-2)
+    qHy2    = @zeros(nx-2, ny-1)
+    ResH    = @zeros(nx-2, ny-2)
+    Re      = @zeros(nx  , ny  )
+    τr_dt   = @zeros(nx  , ny  )
+    dt_ρ    = @zeros(nx-2, ny-2)
     # Initial condition
     D       = D1 * @ones(nx,ny)
     D[1:Int(ceil(nx / 2.2)),:] .= D2
@@ -75,11 +94,11 @@ end
     H0      = Data.Array(exp.(-xc.^2 .- (yc').^2))
     Hold    = @ones(nx,ny) .* H0
     H       = @ones(nx,ny) .* H0
-    @parallel compute_Re!(Re, D, lx, dt)
-    Re[1,:] = Re[2,:]; Re[end,:] = Re[end-1,:]
-    Re[:,1] = Re[:,2]; Re[:,end] = Re[:,end-1]
-    @parallel compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, lx)
-    t = 0.0; it = 0; ittot = 0; nt = ceil(ttot / dt)
+    @parallel compute_Re!(Re, D, max_lxy, dt)
+    @parallel (1:size(Re,1)) bc_y!(Re)
+    @parallel (1:size(Re,2)) bc_x!(Re)
+    @parallel compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, max_lxy)
+    t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))
     # Physical time loop
     while it < nt
         iter = 0; err = 2 * tol
@@ -100,7 +119,17 @@ end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
     if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0, 1), title="linear step diffusion (nt=$it, iters=$ittot)")) end
-    return nx, ny, ittot
+    if do_save
+        !ispath("../output") && mkdir("../output")
+        open("../output/out_diff_2D_linstep3.txt","a") do io
+            println(io, "$(nx) $(ny) $(ittot) $(nt)")
+        end
+    end
+    if do_save_viz
+        !ispath("../out_visu") && mkdir("../out_visu")
+        matwrite("../out_visu/diff_2D_linstep3.mat", Dict("H_2D"=> Array(H), "xc_2D"=> Array(xc), "yc_2D"=> Array(yc)); compress = true)
+    end
+    return
 end
 
-diffusion_2D(; do_viz=true)
+diffusion_2D()

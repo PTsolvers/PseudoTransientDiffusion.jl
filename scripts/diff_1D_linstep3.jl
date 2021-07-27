@@ -1,4 +1,9 @@
-const USE_GPU = false
+const USE_GPU = parse(Bool, ENV["USE_GPU"])
+const do_viz  = parse(Bool, ENV["DO_VIZ"])
+const do_save = parse(Bool, ENV["DO_SAVE"])
+const do_save_viz = parse(Bool, ENV["DO_SAVE_VIZ"])
+const nx = parse(Int, ENV["NX"])
+###
 using ParallelStencil
 using ParallelStencil.FiniteDifferences1D
 @static if USE_GPU
@@ -6,7 +11,7 @@ using ParallelStencil.FiniteDifferences1D
 else
     @init_parallel_stencil(Threads, Float64, 1)
 end
-using Plots, Printf, LinearAlgebra
+using Plots, Printf, LinearAlgebra, MAT
 
 @parallel function compute_Re!(Re, D, lx, dt)
     @inn(Re) = π + sqrt(π^2 + (lx^2 / @maxloc(D) / dt))
@@ -35,13 +40,19 @@ end
     return
 end
 
-@views function diffusion_1D(; nx=512, do_viz=false)
+@parallel_indices (ix) function bc_x!(A)
+    A[1]   = A[2    ]
+    A[end] = A[end-1]
+    return
+end
+
+@views function diffusion_1D()
     # Physics
-    lx     = 20.0       # domain size
+    lx     = 10.0       # domain size
     D1     = 1.0        # diffusion coefficient
     D2     = 1e-4       # diffusion coefficient
     ttot   = 1.0        # total simulation time
-    dt     = 0.1        # physical time step
+    dt     = 0.2        # physical time step
     # Numerics
     # nx     = 2*256      # numerical grid resolution
     tol    = 1e-8       # tolerance
@@ -53,12 +64,12 @@ end
     Vpdt   = CFL * dx
     xc     = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
-    qHx    = @zeros(nx - 1)
-    qHx2   = @zeros(nx - 1)
-    ResH   = @zeros(nx - 2)
+    qHx    = @zeros(nx-1)
+    qHx2   = @zeros(nx-1)
+    ResH   = @zeros(nx-2)
     Re     = @zeros(nx  )
-    τr_dt  = @zeros(nx - 1)
-    dt_ρ   = @zeros(nx - 2)
+    τr_dt  = @zeros(nx-1)
+    dt_ρ   = @zeros(nx-2)
     # Initial condition
     D      = D1 * @ones(nx)
     D[1:Int(ceil(nx / 2.2))] .= D2
@@ -66,9 +77,9 @@ end
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
     @parallel compute_Re!(Re, D, lx, dt)
-    Re[1] = Re[2]; Re[end] = Re[end-1]
+    @parallel (1:size(Re,1)) bc_x!(Re)
     @parallel compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, lx)
-    t = 0.0; it = 0; ittot = 0; nt = ceil(ttot / dt)
+    t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))
     # Physical time loop
     while it < nt
         iter = 0; err = 2 * tol
@@ -89,7 +100,18 @@ end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
     if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear step diffusion (nt=$it, iters=$ittot)")) end
-    return nx, ittot
+    if do_save
+        !ispath("../output") && mkdir("../output")
+        open("../output/out_diff_1D_linstep3.txt","a") do io
+            println(io, "$(nx) $(ittot) $(nt)")
+        end
+    end
+    if do_save_viz
+        !ispath("../out_visu") && mkdir("../out_visu")
+        matwrite("../out_visu/diff_1D_linstep3.mat", Dict("H_1D"=> Array(H), "xc_1D"=> Array(xc)); compress = true)
+    end
+    return
+    return
 end
 
-diffusion_1D(; do_viz=true)
+diffusion_1D()

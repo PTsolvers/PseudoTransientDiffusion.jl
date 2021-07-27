@@ -9,16 +9,16 @@ module load openmpi/gcc83-316-c112
 
 mpirun_=$(which mpirun)
 
-RESOL=( 32 64 128 256 512 )
+RESOL=( 128 )
 declare -a RUN=( "diff_3D_lin3" "diff_3D_linstep3" "diff_3D_nonlin3" )
 
 USE_GPU=true
 
 DO_VIZ=false
 
-DO_SAVE=true
+DO_SAVE=false
 
-DO_SAVE_VIZ=false
+DO_SAVE_VIZ=true
 
 # Read the array values with space
 for name in "${RUN[@]}"; do

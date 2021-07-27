@@ -1,4 +1,9 @@
-const USE_GPU = false
+const USE_GPU = parse(Bool, ENV["USE_GPU"])
+const do_viz  = parse(Bool, ENV["DO_VIZ"])
+const do_save = parse(Bool, ENV["DO_SAVE"])
+const do_save_viz = parse(Bool, ENV["DO_SAVE_VIZ"])
+const nx = parse(Int, ENV["NX"])
+###
 using ParallelStencil
 using ParallelStencil.FiniteDifferences1D
 @static if USE_GPU
@@ -6,7 +11,7 @@ using ParallelStencil.FiniteDifferences1D
 else
     @init_parallel_stencil(Threads, Float64, 1)
 end
-using Plots, Printf, LinearAlgebra
+using Plots, Printf, LinearAlgebra, MAT
 
 @parallel function compute_flux!(qHx, qHx2, H, D, τr_dt, dx)
     @all(qHx)  = (@all(qHx) * τr_dt - D * @d(H) / dx) / (1.0 + τr_dt)
@@ -24,12 +29,12 @@ end
     return
 end
 
-@views function diffusion_1D(; nx=512, do_viz=false)
+@views function diffusion_1D()
     # Physics
-    lx     = 20.0       # domain size
+    lx     = 10.0       # domain size
     D      = 1          # diffusion coefficient
     ttot   = 1.0        # total simulation time
-    dt     = 0.1        # physical time step
+    dt     = 0.2        # physical time step
     # Numerics
     # nx     = 2*256      # numerical grid resolution
     tol    = 1e-8       # tolerance
@@ -44,15 +49,15 @@ end
     dt_ρ   = Vpdt * lx / D / Re
     xc     = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
-    qHx    = @zeros(nx - 1)
-    qHx2   = @zeros(nx - 1)
-    ResH   = @zeros(nx - 2)
-    dH     = @zeros(nx - 2)
+    qHx    = @zeros(nx-1)
+    qHx2   = @zeros(nx-1)
+    ResH   = @zeros(nx-2)
+    dH     = @zeros(nx-2)
     # Initial condition
     H0     = Data.Array(exp.(-xc.^2 / D))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
-    t = 0.0; it = 0; ittot = 0; nt = ceil(ttot/dt)
+    t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot/dt))
     # Physical time loop
     while it < nt
         iter = 0; err = 2 * tol
@@ -75,7 +80,17 @@ end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d, error vs analytic = %1.2e \n", round(ttot, sigdigits=2), it, nx, ittot, norm(Array(H) - Hana) / sqrt(nx))
     # Visualise
     if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, [Array(H) Array(Hana)], legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion (nt=$it, iters=$ittot)")) end
-    return nx, ittot
+    if do_save
+        !ispath("../output") && mkdir("../output")
+        open("../output/out_diff_1D_lin3.txt","a") do io
+            println(io, "$(nx) $(ittot) $(nt)")
+        end
+    end
+    if do_save_viz
+        !ispath("../out_visu") && mkdir("../out_visu")
+        matwrite("../out_visu/diff_1D_lin3.mat", Dict("H_1D"=> Array(H), "xc_1D"=> Array(xc)); compress = true)
+    end
+    return
 end
 
-diffusion_1D(; do_viz=true)
+diffusion_1D()
