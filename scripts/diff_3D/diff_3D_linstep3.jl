@@ -164,7 +164,7 @@ end
     end
     if me==0 && do_save_viz
         !ispath("../../out_visu") && mkdir("../../out_visu")
-        matwrite("../../out_visu/diff_3D_linstep3.mat", Dict("H_3D"=> Array(H), "xc_3D"=> Array(xc), "yc_3D"=> Array(yc), "zc_3D"=> Array(zc)); compress = true)
+        matwrite("../../out_visu/diff_3D_linstep3.mat", Dict("H_3D"=> Array(H_v), "xc_3D"=> Array(xc), "yc_3D"=> Array(yc), "zc_3D"=> Array(zc)); compress = true)
     end
     finalize_global_grid()
     return

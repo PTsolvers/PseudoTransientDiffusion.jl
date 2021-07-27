@@ -1,11 +1,11 @@
 clear
 
-data_1D = load('../out_visu/ini_1D.mat');     H0_1D = data_1D.H0_1D;
-data_1D = load('../out_visu/diff_1D_lin3.mat');     lin_1D = data_1D.H_1D; xc_1D = data_1D.xc_1D;
+data_1D = load('../out_visu/ini_1D.mat');           H0_1D = data_1D.H0_1D;
+data_1D = load('../out_visu/diff_1D_lin3.mat');     lin_1D = data_1D.H_1D; xc_1D = data_1D.xc_1D - data_1D.xc_1D(1);
 data_1D = load('../out_visu/diff_1D_linstep3.mat'); linstep_1D = data_1D.H_1D;
 data_1D = load('../out_visu/diff_1D_nonlin3.mat');  nonlin_1D = data_1D.H_1D;
 
-data_2D = load('../out_visu/diff_2D_lin3.mat');     lin_2D = data_2D.H_2D; xc_2D = data_2D.xc_2D; yc_2D = data_2D.yc_2D;
+data_2D = load('../out_visu/diff_2D_lin3.mat');     lin_2D = data_2D.H_2D; xc_2D = data_2D.xc_2D - data_2D.xc_2D(1); yc_2D = data_2D.yc_2D  - data_2D.yc_2D(1);
 data_2D = load('../out_visu/diff_2D_linstep3.mat'); linstep_2D = data_2D.H_2D;
 data_2D = load('../out_visu/diff_2D_nonlin3.mat');  nonlin_2D = data_2D.H_2D;
 
@@ -151,4 +151,4 @@ pos9 = get(sp9,'position'); set(sp9,'position',[pos9(1)*1.05 pos9(2) pos9(3) pos
 
 fig = gcf;
 fig.PaperPositionMode = 'auto';
-% print('fig_final','-dpng','-r300')
+print('fig_final','-dpng','-r300')

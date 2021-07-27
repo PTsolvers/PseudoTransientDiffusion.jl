@@ -1,15 +1,15 @@
 clear
 
-data_1D = load('ini_1D.mat');
+data_1D = load('../out_visu/ini_1D.mat');
 H0_1D = data_1D.H0_1D;
 xc_1D = data_1D.xc_1D;
 
-data_2D = load('ini_2D.mat');
+data_2D = load('../out_visu/ini_2D.mat');
 H0_2D = data_2D.H0_2D;
 xc_2D = data_2D.xc_2D;
 yc_2D = data_2D.yc_2D;
 
-data_3D = load('ini_3D.mat');
+data_3D = load('../out_visu/ini_3D.mat');
 H0_3D = data_3D.H0_3D;
 dx = data_3D.dx_3D; xc_3D = dx+dx/2:dx:size(H0_3D,1)*dx-dx-dx/2;
 dy = data_3D.dy_3D; yc_3D = dy+dy/2:dy:size(H0_3D,2)*dy-dy-dy/2;

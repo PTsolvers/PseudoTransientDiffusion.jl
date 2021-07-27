@@ -35,6 +35,8 @@ for name in "${RUN_2D[@]}"; do
     fi
 
     for i in "${RESOL_2D[@]}"; do
+
         USE_GPU=$USE_GPU DO_VIZ=$DO_VIZ DO_SAVE=$DO_SAVE DO_SAVE_VIZ=$DO_SAVE_VIZ NX=$i NY=$i $julia_ --project -O3 --check-bounds=no "$name".jl
+    
     done
 done
