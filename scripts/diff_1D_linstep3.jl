@@ -13,14 +13,9 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_Re!(Re, D, lx, dt)
-    @inn(Re) = π + sqrt(π^2 + (lx^2 / @maxloc(D) / dt))
-    return
-end
-
 @parallel function compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, lx)
-    @all(τr_dt) = lx / Vpdt / @av(Re)
-    @all(dt_ρ)  = Vpdt * lx / @maxloc(D) / @inn(Re)
+    @all(τr_dt) = lx / Vpdt / Re
+    @all(dt_ρ)  = Vpdt * lx / @maxloc(D) / Re
     return
 end
 
@@ -62,12 +57,12 @@ end
     # Derived numerics
     dx     = lx / nx      # grid size
     Vpdt   = CFL * dx
+    Re     = π + sqrt(π^2 + (lx^2 / max(D1,D2)) / dt)
     xc     = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
     qHx2   = @zeros(nx-1)
     ResH   = @zeros(nx-2)
-    Re     = @zeros(nx  )
     τr_dt  = @zeros(nx-1)
     dt_ρ   = @zeros(nx-2)
     # Initial condition
@@ -76,8 +71,6 @@ end
     H0     = Data.Array(exp.(-xc.^2))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
-    @parallel compute_Re!(Re, D, lx, dt)
-    @parallel (1:size(Re,1)) bc_x!(Re)
     @parallel compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, lx)
     t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))
     # Physical time loop

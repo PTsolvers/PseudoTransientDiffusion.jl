@@ -20,14 +20,9 @@ norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WO
 
 @views inn(A) = A[2:end-1,2:end-1,2:end-1]
 
-@parallel function compute_Re!(Re, D, max_lxyz, dt)
-    @inn(Re) = π + sqrt(π^2 + (max_lxyz^2 / @maxloc(D) / dt))
-    return
-end
-
 @parallel function compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, max_lxyz)
-    @all(τr_dt) = max_lxyz / Vpdt / @all(Re)
-    @all(dt_ρ)  = Vpdt * max_lxyz / @maxloc(D) / @inn(Re)
+    @all(τr_dt) = max_lxyz / Vpdt / Re
+    @all(dt_ρ)  = Vpdt * max_lxyz / @maxloc(D) / Re
     return
 end
 
@@ -88,6 +83,7 @@ end
     dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g() # cell sizes
     Vpdt       = CFL * min(dx, dy, dz)
     max_lxyz   = max(lx, ly, lz)
+    Re         = π + sqrt(π^2 + (max_lxyz^2 / max(D1,D2)) / dt)
     xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
     # Array allocation
     qHx        = @zeros(nx-1,ny-2,nz-2)
@@ -97,7 +93,6 @@ end
     qHy2       = @zeros(nx-2,ny-1,nz-2)
     qHz2       = @zeros(nx-2,ny-2,nz-1)
     ResH       = @zeros(nx-2,ny-2,nz-2)
-    Re         = @zeros(nx  ,ny  ,nz  )
     τr_dt      = @zeros(nx  ,ny  ,nz  )
     dt_ρ       = @zeros(nx-2,ny-2,nz-2)
     # Initial condition
@@ -111,10 +106,6 @@ end
     H0         = Data.Array([exp(-(x_g(ix,dx,H0)-0.5*lx+dx/2)*(x_g(ix,dx,H0)-0.5*lx+dx/2) - (y_g(iy,dy,H0)-0.5*ly+dy/2)*(y_g(iy,dy,H0)-0.5*ly+dy/2) - (z_g(iz,dz,H0)-0.5*lz+dz/2)*(z_g(iz,dz,H0)-0.5*lz+dz/2)) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)])
     Hold       = @ones(nx,ny,nz) .* H0
     H          = @ones(nx,ny,nz) .* H0
-    @parallel compute_Re!(Re, D, max_lxyz, dt)
-    @parallel (1:size(Re,2),1:size(Re,2)) bc_z!(Re)
-    @parallel (1:size(Re,1),1:size(Re,3)) bc_y!(Re)
-    @parallel (1:size(Re,2),1:size(Re,3)) bc_x!(Re)
     @parallel compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, max_lxyz)
     len_ResH_g = ((nx-2-2)*dims[1]+2)*((ny-2-2)*dims[2]+2)*((nz-2-2)*dims[3]+2)
     if do_viz || do_save_viz

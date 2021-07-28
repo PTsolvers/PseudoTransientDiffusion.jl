@@ -14,14 +14,9 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_Re!(Re, D, max_lxy, dt)
-    @inn(Re) = π + sqrt(π^2 + (max_lxy^2 / @maxloc(D) / dt))
-    return
-end
-
 @parallel function compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, max_lxy)
-    @all(τr_dt) = max_lxy / Vpdt / @all(Re)
-    @all(dt_ρ)  = Vpdt * max_lxy / @maxloc(D) / @inn(Re)
+    @all(τr_dt) = max_lxy / Vpdt / Re
+    @all(dt_ρ)  = Vpdt * max_lxy / @maxloc(D) / Re
     return
 end
 
@@ -77,6 +72,7 @@ end
     dx, dy  = lx / nx, ly / ny  # grid size    
     Vpdt    = CFL * min(dx, dy)
     max_lxy = max(lx, ly)
+    Re      = π + sqrt(π^2 + (max_lxy^2 / max(D1,D2)) / dt)
     xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
     # Array allocation
     qHx     = @zeros(nx-1, ny-2)
@@ -84,7 +80,6 @@ end
     qHx2    = @zeros(nx-1, ny-2)
     qHy2    = @zeros(nx-2, ny-1)
     ResH    = @zeros(nx-2, ny-2)
-    Re      = @zeros(nx  , ny  )
     τr_dt   = @zeros(nx  , ny  )
     dt_ρ    = @zeros(nx-2, ny-2)
     # Initial condition
@@ -94,9 +89,6 @@ end
     H0      = Data.Array(exp.(-xc.^2 .- (yc').^2))
     Hold    = @ones(nx,ny) .* H0
     H       = @ones(nx,ny) .* H0
-    @parallel compute_Re!(Re, D, max_lxy, dt)
-    @parallel (1:size(Re,1)) bc_y!(Re)
-    @parallel (1:size(Re,2)) bc_x!(Re)
     @parallel compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, max_lxy)
     t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))
     # Physical time loop
