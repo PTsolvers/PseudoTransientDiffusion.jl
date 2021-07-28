@@ -74,7 +74,7 @@ pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.97  pos2(2) pos2(3)*1.
 pos3 = get(sp3,'position'); set(sp3,'position',[pos3(1)*0.985 pos3(2) pos3(3)*1.1 pos3(4)*1.1])
 fig = gcf;
 fig.PaperPositionMode = 'auto';
-print('fig_scale123D','-dpng','-r300')
+% print('fig_scale123D','-dpng','-r300')
 end
 %%
 if fig2==1
