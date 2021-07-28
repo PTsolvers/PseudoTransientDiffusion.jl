@@ -14,6 +14,8 @@ fid = fopen('../output/out_diff_2D_nonlin3.txt','r'); diff_2D_nonlin3 = fscanf(f
 fid = fopen('../output/out_diff_3D_nonlin3.txt','r'); diff_3D_nonlin3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
 
 FS = 20;
+mylim = [0.02 1.04];
+ylab = 0.14;
 
 fig1 = 1;
 fig2 = 0;
@@ -24,55 +26,55 @@ figure(2),clf,set(gcf,'color','white','pos',[1400 10 1000 400])
 % 1D
 sp1 = subplot(131);
 st = 2;
-semilogx(diff_1D_lin3(1,st:end), diff_1D_lin3(2,st:end)./diff_1D_lin3(1,st:end),'-o', ...
-         diff_2D_lin3(1,st:end), diff_2D_lin3(3,st:end)./diff_2D_lin3(1,st:end),'-o', ...
-         diff_3D_lin3(1,1:end),  diff_3D_lin3(4,1:end)./ diff_3D_lin3(1,1:end),'-o', ...
+semilogx(diff_1D_lin3(1,st:end), diff_1D_lin3(2,st:end)./diff_1D_lin3(1,st:end)./diff_1D_lin3(3,st:end),'-o', ...
+         diff_2D_lin3(1,st:end), diff_2D_lin3(3,st:end)./diff_2D_lin3(1,st:end)./diff_2D_lin3(4,st:end),'-o', ...
+         diff_3D_lin3(1,1:end),  diff_3D_lin3(4,1:end)./ diff_3D_lin3(1,1:end)./ diff_3D_lin3(5,1:end),'-o', ...
          'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
-ylabel({' ';'\bf{iter_{tot}/nx}'}, 'fontsize',FS)
-ylim([0.5 6])
+ylabel({' ';'\bf{iter_{tot}/nt/nx}'}, 'fontsize',FS)
+ylim(mylim)
 % lg=legend('1D', '2D', '3D'); set(lg,'box','off')
 set(gca, 'XTick',diff_1D_lin3(1,st:end))
 xtickangle(45)
 xlabel('\bf{nx}', 'fontsize',FS)
 title({'linear'; 'diffusion'})
 set(gca,'fontname','Courier')
-text(85,1.1,'a)','fontsize',FS+2,'fontname','Courier')
+text(85,ylab,'a)','fontsize',FS+2,'fontname','Courier')
 
 sp2 = subplot(132);
 st = 2;
-semilogx(diff_1D_linstep3(1,st:end), diff_1D_linstep3(2,st:end)./diff_1D_linstep3(1,st:end),'-o', ...
-         diff_2D_linstep3(1,st:end), diff_2D_linstep3(3,st:end)./diff_2D_linstep3(1,st:end),'-o', ...
-         diff_3D_linstep3(1,1:end),  diff_3D_linstep3(4,1:end)./diff_3D_linstep3(1,1:end),'-o', ...
+semilogx(diff_1D_linstep3(1,st:end), diff_1D_linstep3(2,st:end)./diff_1D_linstep3(1,st:end)./diff_1D_linstep3(3,st:end),'-o', ...
+         diff_2D_linstep3(1,st:end), diff_2D_linstep3(3,st:end)./diff_2D_linstep3(1,st:end)./diff_2D_linstep3(4,st:end),'-o', ...
+         diff_3D_linstep3(1,1:end),  diff_3D_linstep3(4,1:end)./diff_3D_linstep3(1,1:end)./diff_3D_linstep3(5,1:end),'-o', ...
          'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 title({'linear step'; 'diffusion'})
-ylim([0.5 6])
+ylim(mylim)
 set(gca, 'XTick',diff_1D_linstep3(1,st:end),'YTicklabel',[])
 xtickangle(45)
 xlabel('\bf{nx}', 'fontsize',FS)
 set(gca,'fontname','Courier')
-text(85,1.1,'b)','fontsize',FS+2,'fontname','Courier')
+text(85,ylab,'b)','fontsize',FS+2,'fontname','Courier')
 
 sp3 = subplot(133);
 st = 2;
-semilogx(diff_1D_nonlin3(1,st:end), diff_1D_nonlin3(2,st:end)./diff_1D_nonlin3(1,st:end),'-o', ...
-         diff_2D_nonlin3(1,st:end), diff_2D_nonlin3(3,st:end)./diff_2D_nonlin3(1,st:end),'-o', ...
-         diff_3D_nonlin3(1,1:end), diff_3D_nonlin3(4,1:end)./diff_3D_nonlin3(1,1:end),'-o', ...
+semilogx(diff_1D_nonlin3(1,st:end), diff_1D_nonlin3(2,st:end)./diff_1D_nonlin3(1,st:end)./diff_1D_nonlin3(3,st:end),'-o', ...
+         diff_2D_nonlin3(1,st:end), diff_2D_nonlin3(3,st:end)./diff_2D_nonlin3(1,st:end)./diff_2D_nonlin3(4,st:end),'-o', ...
+         diff_3D_nonlin3(1,1:end), diff_3D_nonlin3(4,1:end)./diff_3D_nonlin3(1,1:end)./diff_3D_nonlin3(5,1:end),'-o', ...
          'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 lg=legend('1D', '2D', '3D'); set(lg,'box','off')
 title({'nonlinear'; 'diffusion'})
-ylim([0.5 6])
+ylim(mylim)
 set(gca, 'XTick',diff_1D_nonlin3(1,st:end),'YTicklabel',[])
 xtickangle(45)
 xlabel('\bf{nx}', 'fontsize',FS)
 set(gca,'fontname','Courier')
-text(85,1.1,'c)','fontsize',FS+2,'fontname','Courier')
+text(85,ylab,'c)','fontsize',FS+2,'fontname','Courier')
 
 pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*0.9   pos1(2) pos1(3)*1.1 pos1(4)*1.1])
 pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.97  pos2(2) pos2(3)*1.1 pos2(4)*1.1])
 pos3 = get(sp3,'position'); set(sp3,'position',[pos3(1)*0.985 pos3(2) pos3(3)*1.1 pos3(4)*1.1])
 fig = gcf;
 fig.PaperPositionMode = 'auto';
-% print('fig_scale123D','-dpng','-r300')
+print('fig_scale123D','-dpng','-r300')
 end
 %%
 if fig2==1
