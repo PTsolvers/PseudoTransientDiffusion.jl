@@ -41,10 +41,10 @@ end
     itMax  = 1e5        # max number of iterations
     nout   = 10         # tol check
     CFL    = 1.0        # CFL number
-    Re     = π + sqrt(π^2 + (lx^2 / D / dt)) # Numerical Reynolds number
     # Derived numerics
     dx     = lx / nx      # grid size
     Vpdt   = CFL * dx
+    Re     = π + sqrt(π^2 + (lx^2 / D / dt)) # Numerical Reynolds number
     τr_dt  = lx / Vpdt / Re
     dt_ρ   = Vpdt * lx / D / Re
     xc     = LinRange(-lx / 2, lx / 2, nx)

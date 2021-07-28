@@ -44,12 +44,12 @@ end
     itMax   = 1e5           # max number of iterations
     nout    = 10            # tol check
     CFL     = 1/sqrt(2)     # CFL number
-    Re      = π + sqrt(π^2 + (max(lx, ly)^2 / D / dt)) # Numerical Reynolds number
     # Derived numerics
     dx, dy  = lx / nx, ly / ny  # grid size    
-    Vpdt   = CFL * min(dx, dy)
-    τr_dt  = max(lx, ly) / Vpdt / Re
-    dt_ρ   = Vpdt * max(lx, ly) / D / Re
+    Vpdt    = CFL * min(dx, dy)
+    Re      = π + sqrt(π^2 + (max(lx, ly)^2 / D / dt)) # Numerical Reynolds number
+    τr_dt   = max(lx, ly) / Vpdt / Re
+    dt_ρ    = Vpdt * max(lx, ly) / D / Re
     xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
     # Array allocation
     qHx     = @zeros(nx-1, ny-2)

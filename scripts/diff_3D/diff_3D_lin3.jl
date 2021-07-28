@@ -51,13 +51,13 @@ end
     itMax      = 1e5              # max number of iterations
     nout       = 10               # tol check
     CFL        = 1/sqrt(3)        # CFL number
-    Re         = π + sqrt(π^2 + (max(lx, ly, lz)^2 / D / dt)) # Numerical Reynolds number
     me, dims   = init_global_grid(nx, ny, nz) # MPI initialisation
     @static if USE_GPU select_device() end    # select one GPU per MPI local rank (if >1 GPU per node)
     b_width    = (8, 4, 4)       # boundary width for comm/comp overlap
     # Derived numerics    
     dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g() # cell sizes
     Vpdt       = CFL * min(dx, dy, dz)
+    Re         = π + sqrt(π^2 + (max(lx, ly, lz)^2 / D / dt)) # Numerical Reynolds number
     τr_dt      = max(lx, ly, lz) / Vpdt / Re
     dt_ρ       = Vpdt * max(lx, ly, lz) / D / Re
     xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
