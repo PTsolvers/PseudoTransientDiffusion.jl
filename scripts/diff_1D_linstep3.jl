@@ -13,7 +13,7 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, lx)
+@parallel function compute_iter_params!(τr_dt, dt_ρ, D, Re, Vpdt, lx)
     @all(τr_dt) = lx / Vpdt / Re
     @all(dt_ρ)  = Vpdt * lx / @maxloc(D) / Re
     return
@@ -71,7 +71,7 @@ end
     H0     = Data.Array(exp.(-xc.^2))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
-    @parallel compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, lx)
+    @parallel compute_iter_params!(τr_dt, dt_ρ, D, Re, Vpdt, lx)
     t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))
     # Physical time loop
     while it < nt

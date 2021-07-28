@@ -20,7 +20,7 @@ norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WO
 
 @views inn(A) = A[2:end-1,2:end-1,2:end-1]
 
-@parallel function compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, max_lxyz)
+@parallel function compute_iter_params!(τr_dt, dt_ρ, D, Re, Vpdt, max_lxyz)
     @all(τr_dt) = max_lxyz / Vpdt / Re
     @all(dt_ρ)  = Vpdt * max_lxyz / @maxloc(D) / Re
     return
@@ -106,7 +106,7 @@ end
     H0         = Data.Array([exp(-(x_g(ix,dx,H0)-0.5*lx+dx/2)*(x_g(ix,dx,H0)-0.5*lx+dx/2) - (y_g(iy,dy,H0)-0.5*ly+dy/2)*(y_g(iy,dy,H0)-0.5*ly+dy/2) - (z_g(iz,dz,H0)-0.5*lz+dz/2)*(z_g(iz,dz,H0)-0.5*lz+dz/2)) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)])
     Hold       = @ones(nx,ny,nz) .* H0
     H          = @ones(nx,ny,nz) .* H0
-    @parallel compute_iter_params!(τr_dt, dt_ρ, Re, D, Vpdt, max_lxyz)
+    @parallel compute_iter_params!(τr_dt, dt_ρ, D, Re, Vpdt, max_lxyz)
     len_ResH_g = ((nx-2-2)*dims[1]+2)*((ny-2-2)*dims[2]+2)*((nz-2-2)*dims[3]+2)
     if do_viz || do_save_viz
         if (me==0) ENV["GKSwstype"]="nul"; if do_viz !ispath("../../figures") && mkdir("../../figures") end; end
