@@ -108,7 +108,7 @@ end
         @parallel cublocks cuthreads assign!(Hold, H)
     end
     t_toc = Base.time() - t_tic
-    A_eff = (2*3+1)/1e9*nx*ny*sizeof(Data.Number) # Effective main memory access per iteration [GB]
+    A_eff = (2*3+2)/1e9*nx*ny*sizeof(Data.Number) # Effective main memory access per iteration [GB]
     t_it  = t_toc/niter                           # Execution time per iteration [s]
     T_eff = A_eff/t_it                            # Effective memory throughput [GB/s]
     @printf("PERF: Time = %1.3f sec, T_eff = %1.2f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits=2), niter)
