@@ -143,7 +143,7 @@ end
     if do_viz || do_save_viz
         H_inn .= inn(H); gather!(H_inn, H_v)
         if me==0 && do_viz
-            heatmap(Xi_g, Yi_g, H_v[:,:,z_sl]', dpi=150, aspect_ratio=1, framestyle=:box, xlims=(Xi_g[1],Xi_g[end]), ylims=(Yi_g[1],Yi_g[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0,1), title="linear step diffusion (nt=$it, iters=$ittot)")
+            heatmap(Xi_g, Yi_g, H_v[:,:,z_sl]', dpi=150, aspect_ratio=1, framestyle=:box, xlims=(Xi_g[1],Xi_g[end]), ylims=(Yi_g[1],Yi_g[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0,1), title="linear step diffusion (nt=$it, iters=$ittot)")
             savefig("../../figures/diff_3D_linstep3_$(nx_g()).png")
         end
     end

@@ -90,7 +90,7 @@ end
     end
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
-    if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0, 1), title="linear diffusion (nt=$it, iters=$ittot)")) end
+    if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0, 1), title="linear diffusion (nt=$it, iters=$ittot)")) end
     if do_save
         !ispath("../output") && mkdir("../output")
         open("../output/out_diff_2D_nonlin3.txt","a") do io

@@ -1,4 +1,6 @@
-const USE_GPU = false
+const USE_GPU = haskey(ENV, "USE_GPU") ? parse(Bool, ENV["USE_GPU"]) : false
+const do_viz  = haskey(ENV, "DO_VIZ")  ? parse(Bool, ENV["DO_VIZ"])  : true
+const nx = haskey(ENV, "NX") ? parse(Int, ENV["NX"]) : 512
 using ParallelStencil
 using ParallelStencil.FiniteDifferences1D
 @static if USE_GPU
@@ -24,7 +26,7 @@ end
     return
 end
 
-@views function diffusion_1D(; nx=512, do_viz=false)
+@views function diffusion_react_1D()
     # Physics
     lx      = 20.0       # domain size
     D       = 1          # diffusion coefficient
@@ -66,7 +68,7 @@ end
     @printf("nx = %d, iterations tot = %d \n", nx, iter)
     # Visualise
     if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion-reaction (iters=$iter)")) end
-    return nx, iter
+    return
 end
 
-diffusion_1D(; do_viz=true)
+diffusion_react_1D()

@@ -1,4 +1,7 @@
-const USE_GPU = false
+const USE_GPU = haskey(ENV, "USE_GPU") ? parse(Bool, ENV["USE_GPU"]) : false
+const do_viz  = haskey(ENV, "DO_VIZ")  ? parse(Bool, ENV["DO_VIZ"])  : true
+const nx = haskey(ENV, "NX") ? parse(Int, ENV["NX"]) : 512
+const ny = haskey(ENV, "NY") ? parse(Int, ENV["NY"]) : 512
 using ParallelStencil
 using ParallelStencil.FiniteDifferences2D
 @static if USE_GPU
@@ -26,13 +29,13 @@ end
     return
 end
 
-@views function diffusion_2D(; nx=512, ny=512, do_viz=false)
+@views function diffusion_react_2D()
     # Physics
     lx, ly  = 10.0, 10.0    # domain size
     D       = 1.0           # diffusion coefficient
     τkin    = 0.1           # characteristic time of reaction
     # Numerics
-    # nx     = 2*256        # numerical grid resolution
+    # nx, ny  = 2*256, 2*256  # numerical grid resolution
     tol     = 1e-8          # tolerance
     itMax   = 1e5           # max number of iterations
     nout    = 10            # tol check
@@ -67,10 +70,10 @@ end
         end
     end
     if isnan(err) error("NaN") end
-    @printf("nx = %d, iterations tot = %d \n", nx, iter)
+    @printf("nx = %d, ny = %d, iterations tot = %d \n", nx, ny, iter)
     # Visualise
-    if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), xlabel="lx", ylabel="ly", c=:hot, clims=(0, 1), title="linear diffusion-reaction (iters=$iter)")) end
-    return nx, ny, iter
+    if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0, 1), title="linear diffusion-reaction (iters=$iter)")) end
+    return
 end
 
-diffusion_2D(; do_viz=true)
+diffusion_react_2D()
