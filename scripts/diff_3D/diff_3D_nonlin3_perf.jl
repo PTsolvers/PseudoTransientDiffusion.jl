@@ -107,13 +107,13 @@ end
         z_sl   = Int(ceil(nz_g()/2))     # Central z-slice
         Xi_g, Yi_g = dx+dx/2:dx:lx-dx-dx/2, dy+dy/2:dy:ly-dy-dy/2 # inner points only
     end
-    t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot/dt)); t_tic = 0.0; niter = 0
+    t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot/dt)); niter = 0
     # Physical time loop
     while it<nt
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            if (it==1 && iter==0) t_tic = Base.time(); niter = 0 end
+            if (it==1 && iter==0) tic(); niter = 0 end
             @parallel compute_flux!(qHx, qHy, qHz, H, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz)
             @hide_communication b_width begin # communication/computation overlap
                 @parallel compute_update!(H, Hold, qHx, qHy, qHz, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz, size_innH_1, size_innH_2, size_innH_3)
@@ -130,7 +130,7 @@ end
         @parallel assign!(Hold, H)
         if isnan(err) error("NaN") end
     end
-    t_toc = Base.time() - t_tic
+    t_toc = toc()
     A_eff = (2*4+2)/1e9*nx*ny*nz*sizeof(Data.Number) # Effective main memory access per iteration [GB]
     t_it  = t_toc/niter                              # Execution time per iteration [s]
     T_eff = A_eff/t_it                               # Effective memory throughput [GB/s]
