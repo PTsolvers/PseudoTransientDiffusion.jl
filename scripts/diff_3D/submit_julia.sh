@@ -9,7 +9,7 @@ export HOME2=${project_dir}
 export JULIA_PROJECT=${HOME2}/${app_dir}
 export JULIA_DEPOT_PATH=${HOME2}/julia_depot
 
-export JULIA_CUDA_MEMORY_POOL=binned
+export JULIA_CUDA_MEMORY_POOL=none
 export JULIA_MPI_BINARY=system
 export JULIA_CUDA_USE_BINARYBUILDER=false
 export IGG_CUDAAWARE_MPI=1

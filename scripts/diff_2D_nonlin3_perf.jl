@@ -67,8 +67,8 @@ end
     # Numerics
     # nx, ny  = 2*256, 2*256  # numerical grid resolution
     tol     = 1e-8          # tolerance
-    itMax   = 1e5           # max number of iterations
-    nout    = 1000            # tol check
+    itMax   = 1e2#1e5           # max number of iterations
+    nout    = 2000            # tol check
     CFL     = 1 / sqrt(2)   # CFL number
     Resc    = 1 / 1.2       # iteration parameter scaling
     # Derived numerics
@@ -122,13 +122,13 @@ end
     if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0, 1), title="linear diffusion (nt=$it, iters=$ittot)")) end
     if do_save
         !ispath("../output") && mkdir("../output")
-        open("../output/out_diff_2D_nonlin3.txt","a") do io
-            println(io, "$(nx) $(ny) $(ittot) $(nt)")
+        open("../output/out_diff_2D_nonlin3_perf.txt","a") do io
+            println(io, "$(nx) $(ny) $(ittot) $(t_toc) $(A_eff) $(t_it) $(T_eff)")
         end
     end
     if do_save_viz
         !ispath("../out_visu") && mkdir("../out_visu")
-        matwrite("../out_visu/diff_2D_nonlin3.mat", Dict("H_2D"=> Array(H), "xc_2D"=> Array(xc), "yc_2D"=> Array(yc)); compress = true)
+        matwrite("../out_visu/diff_2D_nonlin3_perf.mat", Dict("H_2D"=> Array(H), "xc_2D"=> Array(xc), "yc_2D"=> Array(yc)); compress = true)
     end
     return
 end

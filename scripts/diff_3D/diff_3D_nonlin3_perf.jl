@@ -147,7 +147,7 @@ end
     if me==0 && do_save
         !ispath("../../output") && mkdir("../../output")
         open("../../output/out_diff_3D_nonlin3_perf.txt","a") do io
-            println(io, "$(nx_g()) $(ny_g()) $(nz_g()) $(ittot) $(nt)")
+            println(io, "$(nx_g()) $(ny_g()) $(nz_g()) $(ittot) $(t_toc) $(A_eff) $(t_it) $(T_eff)")
         end
     end
     if me==0 && do_save_viz
