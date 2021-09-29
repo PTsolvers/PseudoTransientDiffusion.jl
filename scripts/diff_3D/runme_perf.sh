@@ -40,12 +40,13 @@ for name in "${RUN[@]}"; do
         fi
     fi
 
-    if [ "$name" = "${RUN[1]}" ]; then
+    if [ "$name" = "${RUN[0]}" ]; then
 
         for i in "${RESOL1[@]}"; do
 
             for ie in {1..5}; do
             
+                echo "== Running script $name, resol=$i (test $ie)"
                 ./submit_julia.sh $i $USE_GPU $DO_VIZ $DO_SAVE $DO_SAVE_VIZ $name
 
             done
@@ -58,6 +59,7 @@ for name in "${RUN[@]}"; do
 
             for ie in {1..5}; do
 
+                echo "== Running script $name, resol=$RESOL2, nprocs=$np (test $ie)"
                 $mpirun_ -np $np -rf gpu_rankfile_node40 ./submit_julia.sh $RESOL2 $USE_GPU $DO_VIZ $DO_SAVE $DO_SAVE_VIZ $name
     
             done

@@ -73,7 +73,7 @@ end
     nout       = 2000             # tol check
     CFL        = 1 / sqrt(3)      # CFL number
     Resc       = 1 / 1.2          # iteration parameter scaling
-    me, dims   = init_global_grid(nx, ny, nz) # MPI initialisation
+    me, dims, nprocs = init_global_grid(nx, ny, nz) # MPI initialisation
     @static if USE_GPU select_device() end    # select one GPU per MPI local rank (if >1 GPU per node)
     b_width    = (8, 4, 4)       # boundary width for comm/comp overlap
     # Derived numerics    
@@ -147,7 +147,7 @@ end
     if me==0 && do_save
         !ispath("../../output") && mkdir("../../output")
         open("../../output/out_diff_3D_nonlin3_perf.txt","a") do io
-            println(io, "$(nx_g()) $(ny_g()) $(nz_g()) $(ittot) $(t_toc) $(A_eff) $(t_it) $(T_eff)")
+            println(io, "$(nprocs) $(nx_g()) $(ny_g()) $(nz_g()) $(ittot) $(t_toc) $(A_eff) $(t_it) $(T_eff)")
         end
     end
     if me==0 && do_save_viz
