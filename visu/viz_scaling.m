@@ -1,17 +1,17 @@
 clear
 
 % load scaling_data
-fid = fopen('../output/out_diff_1D_lin3.txt','r'); diff_1D_lin3 = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_2D_lin3.txt','r'); diff_2D_lin3 = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_3D_lin3.txt','r'); diff_3D_lin3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_1D_lin3.txt'         ,'r'); diff_1D_lin3 = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_2D_lin3.txt'         ,'r'); diff_2D_lin3 = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_3D_lin3_multixpu.txt','r'); diff_3D_lin3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
 
-fid = fopen('../output/out_diff_1D_linstep3.txt','r'); diff_1D_linstep3 = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_2D_linstep3.txt','r'); diff_2D_linstep3 = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_3D_linstep3.txt','r'); diff_3D_linstep3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_1D_linstep3.txt'         ,'r'); diff_1D_linstep3 = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_2D_linstep3.txt'         ,'r'); diff_2D_linstep3 = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_3D_linstep3_multixpu.txt','r'); diff_3D_linstep3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
 
-fid = fopen('../output/out_diff_1D_nonlin3.txt','r'); diff_1D_nonlin3 = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_2D_nonlin3.txt','r'); diff_2D_nonlin3 = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_3D_nonlin3.txt','r'); diff_3D_nonlin3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_1D_nonlin3.txt'         ,'r'); diff_1D_nonlin3 = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_2D_nonlin3.txt'         ,'r'); diff_2D_nonlin3 = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_3D_nonlin3_multixpu.txt','r'); diff_3D_nonlin3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
 
 FS = 20;
 mylim = [0.02 1.04];

@@ -13,12 +13,7 @@ using ParallelStencil.FiniteDifferences3D
 else
     @init_parallel_stencil(Threads, Float64, 3)
 end
-using ImplicitGlobalGrid, Plots, Printf, LinearAlgebra, MAT
-import MPI
-
-norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WORLD)))
-
-@views inn(A) = A[2:end-1,2:end-1,2:end-1]
+using Plots, Printf, LinearAlgebra, MAT
 
 macro innH3(ix,iy,iz)       esc(:( H[$ix+1,$iy+1,$iz+1]*H[$ix+1,$iy+1,$iz+1]*H[$ix+1,$iy+1,$iz+1] )) end
 macro av_xi_H3(ix,iy,iz)    esc(:( 0.5*(H[$ix,$iy+1,$iz+1]+H[$ix+1,$iy+1,$iz+1]) * 0.5*(H[$ix,$iy+1,$iz+1]+H[$ix+1,$iy+1,$iz+1]) * 0.5*(H[$ix,$iy+1,$iz+1]+H[$ix+1,$iy+1,$iz+1]) )) end
@@ -73,11 +68,8 @@ end
     nout       = 2000             # tol check
     CFL        = 1 / sqrt(3)      # CFL number
     Resc       = 1 / 1.2          # iteration parameter scaling
-    me, dims, nprocs = init_global_grid(nx, ny, nz) # MPI initialisation
-    @static if USE_GPU select_device() end    # select one GPU per MPI local rank (if >1 GPU per node)
-    b_width    = (8, 4, 4)       # boundary width for comm/comp overlap
     # Derived numerics    
-    dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g() # cell sizes
+    dx, dy, dz = lx/nx, ly/ny, lz/nz # cell sizes
     Vpdt       = CFL * min(dx, dy, dz)
     max_lxyz   = max(lx, ly, lz)
     max_lxyz2  = max_lxyz^2
@@ -93,68 +85,52 @@ end
     ResH       = @zeros(nx-2,ny-2,nz-2)
     # Initial condition
     H0         = zeros(nx,ny,nz)
-    H0         = Data.Array([exp(-(x_g(ix,dx,H0)-0.5*lx+dx/2)*(x_g(ix,dx,H0)-0.5*lx+dx/2) - (y_g(iy,dy,H0)-0.5*ly+dy/2)*(y_g(iy,dy,H0)-0.5*ly+dy/2) - (z_g(iz,dz,H0)-0.5*lz+dz/2)*(z_g(iz,dz,H0)-0.5*lz+dz/2)) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)])
+    H0         = Data.Array([exp(-(xc[ix]-0.5*lx)^2 - (yc[iy]-0.5*ly)^2 - (zc[iz]-0.5*lz)^2) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)])
     Hold       = @ones(nx,ny,nz) .* H0
     H          = @ones(nx,ny,nz) .* H0
     size_innH_1, size_innH_2, size_innH_3 = size(H,1)-2, size(H,2)-2, size(H,3)-2
-    len_ResH_g = ((nx-2-2)*dims[1]+2)*((ny-2-2)*dims[2]+2)*((nz-2-2)*dims[3]+2)
-    if do_viz || do_save_viz
-        if (me==0) ENV["GKSwstype"]="nul"; if do_viz !ispath("../../figures") && mkdir("../../figures") end; end
-        nx_v, ny_v, nz_v = (nx-2)*dims[1], (ny-2)*dims[2], (nz-2)*dims[3]
-        if (nx_v*ny_v*nz_v*sizeof(Data.Number) > 0.8*Sys.free_memory()) error("Not enough memory for visualization.") end
-        H_v    = zeros(nx_v, ny_v, nz_v) # global array for visu
-        H_inn  = zeros(nx-2, ny-2, nz-2) # no halo local array for visu
-        z_sl   = Int(ceil(nz_g()/2))     # Central z-slice
-        Xi_g, Yi_g = dx+dx/2:dx:lx-dx-dx/2, dy+dy/2:dy:ly-dy-dy/2 # inner points only
-    end
-    t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot/dt)); niter = 0
+    t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot/dt)); t_tic = 0.0; niter = 0
     # Physical time loop
     while it<nt
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            if (it==1 && iter==0) tic(); niter = 0 end
+            if (it==1 && iter==0) t_tic = Base.time(); niter = 0 end
             @parallel compute_flux!(qHx, qHy, qHz, H, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz)
-            @hide_communication b_width begin # communication/computation overlap
-                @parallel compute_update!(H, Hold, qHx, qHy, qHz, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz, size_innH_1, size_innH_2, size_innH_3)
-                update_halo!(H)
-            end
+            @parallel compute_update!(H, Hold, qHx, qHy, qHz, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz, size_innH_1, size_innH_2, size_innH_3)
             iter += 1;  niter += 1
             if iter % nout == 0
                 @parallel compute_flux_res!(qHx2, qHy2, qHz2, H, _dx, _dy, _dz)
                 @parallel check_res!(ResH, H, Hold, qHx2, qHy2, qHz2, _dt, _dx, _dy, _dz)
-                err = norm_g(ResH)/len_ResH_g
+                err = norm(ResH)/length(ResH)
             end
         end
         ittot += iter; it += 1; t += dt
         @parallel assign!(Hold, H)
         if isnan(err) error("NaN") end
     end
-    t_toc = toc()
+    t_toc = Base.time() - t_tic
     A_eff = (2*4+2)/1e9*nx*ny*nz*sizeof(Data.Number) # Effective main memory access per iteration [GB]
     t_it  = t_toc/niter                              # Execution time per iteration [s]
     T_eff = A_eff/t_it                               # Effective memory throughput [GB/s]
-    if (me==0) @printf("PERF: Time = %1.3f sec, T_eff = %1.2f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits=3), niter) end
-    if (me==0) @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx_g(), ittot) end
+    @printf("PERF: Time = %1.3f sec, T_eff = %1.2f GB/s (niter = %d)\n", t_toc, round(T_eff, sigdigits=3), niter)
+    @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx, ittot)
     # Visualise
-    if do_viz || do_save_viz
-        H_inn .= inn(H); gather!(H_inn, H_v)
-        if me==0 && do_viz
-            heatmap(Xi_g, Yi_g, H_v[:,:,z_sl]', dpi=150, aspect_ratio=1, framestyle=:box, xlims=(Xi_g[1],Xi_g[end]), ylims=(Yi_g[1],Yi_g[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0,1), title="nonlinear diffusion (nt=$it, iters=$ittot)")
-            savefig("../../figures/diff_3D_nonlin3_perf_$(nx_g()).png")
-        end
+    if do_viz
+        !ispath("../../figures") && mkdir("../../figures")
+        heatmap(xc, yc, Array(H)[:,:,Int(ceil(nz/2))]', dpi=150, aspect_ratio=1, framestyle=:box, xlims=(xc[1],xc[end]), ylims=(yc[1],yc[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0,1), title="nonlinear diffusion (nt=$it, iters=$ittot)")
+        savefig("../../figures/diff_3D_nonlin3_perf_$(nx).png")
     end
-    if me==0 && do_save
+    if do_save
         !ispath("../../output") && mkdir("../../output")
         open("../../output/out_diff_3D_nonlin3_perf.txt","a") do io
-            println(io, "$(nprocs) $(nx_g()) $(ny_g()) $(nz_g()) $(ittot) $(t_toc) $(A_eff) $(t_it) $(T_eff)")
+            println(io, "1 $(nx) $(ny) $(nz) $(ittot) $(t_toc) $(A_eff) $(t_it) $(T_eff)")
         end
     end
-    if me==0 && do_save_viz
+    if do_save_viz
         !ispath("../../out_visu") && mkdir("../../out_visu")
-        matwrite("../../out_visu/diff_3D_nonlin3_perf.mat", Dict("H_3D"=> Array(H_v), "xc_3D"=> Array(xc), "yc_3D"=> Array(yc), "zc_3D"=> Array(zc)); compress = true)
+        matwrite("../../out_visu/diff_3D_nonlin3_perf.mat", Dict("H_3D"=> Array(H), "xc_3D"=> Array(xc), "yc_3D"=> Array(yc), "zc_3D"=> Array(zc)); compress = true)
     end
-    finalize_global_grid()
     return
 end
 

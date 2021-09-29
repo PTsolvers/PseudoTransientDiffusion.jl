@@ -14,7 +14,7 @@ export JULIA_MPI_BINARY=system
 export JULIA_CUDA_USE_BINARYBUILDER=false
 export IGG_CUDAAWARE_MPI=1
 
-export PS_THREAD_BOUND_CHECK=0
+export PS_THREAD_BOUND_CHECK=1
 export JULIA_NUM_THREADS=4
 
 module purge > /dev/null 2>&1

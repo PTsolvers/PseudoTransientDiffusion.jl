@@ -10,7 +10,7 @@ module load openmpi/gcc83-316-c112
 mpirun_=$(which mpirun)
 
 RESOL=( 32 64 128 256 512 )
-declare -a RUN=( "diff_3D_lin3" "diff_3D_linstep3" "diff_3D_nonlin3" )
+declare -a RUN=( "diff_3D_lin3_multixpu" "diff_3D_linstep3_multixpu" "diff_3D_nonlin3_multixpu" )
 
 USE_GPU=true
 
