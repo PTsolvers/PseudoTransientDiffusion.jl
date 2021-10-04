@@ -9,7 +9,7 @@ using ParallelStencil
 using ParallelStencil.FiniteDifferences2D
 @static if USE_GPU
     @init_parallel_stencil(CUDA, Float64, 2)
-    CUDA.device!(6) # select GPU
+    # CUDA.device!(6) # select GPU
 else
     @init_parallel_stencil(Threads, Float64, 2)
 end
@@ -32,13 +32,6 @@ macro dt_ρ(ix,iy)        esc(:( Vpdt * max_lxy / @innH3($ix,$iy) / @Re($ix,$iy)
 end
 
 @parallel_indices (ix,iy) function compute_update!(H, Hold, qHx, qHy, Vpdt, Resc, _dt, max_lxy, max_lxy2, _dx, _dy, size_innH_1, size_innH_2)
-    if (ix<=size_innH_1 && iy<=size_innH_2)  H[ix+1,iy+1] = (H[ix+1,iy+1] + @dt_ρ(ix,iy) * (_dt * Hold[ix+1,iy+1] - (_dx * (qHx[ix+1,iy] - qHx[ix,iy]) + _dy * (qHy[ix,iy+1] - qHy[ix,iy])) )) / (1.0 + _dt * @dt_ρ(ix,iy))  end
-    return
-end
-
-@parallel_indices (ix,iy) function compute_diffusion!(H, qHx2, qHy2, Hold, qHx, qHy, Vpdt, Resc, _dt, max_lxy, max_lxy2, _dx, _dy, size_innH_1, size_innH_2)
-    if (ix<=size(qHx,1) && iy<=size(qHx,2))  qHx2[ix,iy]  = (qHx[ix,iy] * @av_xi_τr_dt(ix,iy) - @av_xi_H3(ix,iy) * _dx * (H[ix+1,iy+1] - H[ix,iy+1]) ) / (1.0 + @av_xi_τr_dt(ix,iy))  end
-    if (ix<=size(qHy,1) && iy<=size(qHy,2))  qHy2[ix,iy]  = (qHy[ix,iy] * @av_yi_τr_dt(ix,iy) - @av_yi_H3(ix,iy) * _dy * (H[ix+1,iy+1] - H[ix+1,iy]) ) / (1.0 + @av_yi_τr_dt(ix,iy))  end
     if (ix<=size_innH_1 && iy<=size_innH_2)  H[ix+1,iy+1] = (H[ix+1,iy+1] + @dt_ρ(ix,iy) * (_dt * Hold[ix+1,iy+1] - (_dx * (qHx[ix+1,iy] - qHx[ix,iy]) + _dy * (qHy[ix,iy+1] - qHy[ix,iy])) )) / (1.0 + _dt * @dt_ρ(ix,iy))  end
     return
 end
@@ -98,9 +91,6 @@ end
             if (it==1 && iter==0) t_tic = Base.time(); niter = 0 end
             @parallel compute_flux!(qHx, qHy, H, Vpdt, Resc, _dt, max_lxy, max_lxy2, _dx, _dy)
             @parallel compute_update!(H, Hold, qHx, qHy, Vpdt, Resc, _dt, max_lxy, max_lxy2, _dx, _dy, size_innH_1, size_innH_2)
-            # @parallel compute_diffusion!(H, qHx2, qHy2, Hold, qHx, qHy, Vpdt, Resc, _dt, max_lxy, max_lxy2, _dx, _dy, size_innH_1, size_innH_2)
-            # qHx, qHx2 = qHx2, qHx
-            # qHy, qHy2 = qHy2, qHy
             iter += 1;  niter += 1
             if iter % nout == 0
                 @parallel compute_flux_res!(qHx2, qHy2, H, _dx, _dy)
