@@ -20,7 +20,8 @@ export JULIA_NUM_THREADS=4
 module purge > /dev/null 2>&1
 module load julia
 module load cuda/11.2
-module load openmpi/gcc83-316-c112
+# module load openmpi/gcc83-316-c112
+module load openmpi/gcc83-314-c112
 
 julia_=$(which julia)
 

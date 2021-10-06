@@ -5,7 +5,8 @@
 module purge > /dev/null 2>&1
 module load julia
 module load cuda/11.2
-module load openmpi/gcc83-316-c112
+# module load openmpi/gcc83-316-c112
+module load openmpi/gcc83-314-c112
 
 mpirun_=$(which mpirun)
 
