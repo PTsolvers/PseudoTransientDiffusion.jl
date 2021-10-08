@@ -27,8 +27,8 @@ FS = 20;
 mylim = [0 870];
 ylab = 790;
 
-fig1 = 1;
-fig2 = 0;
+fig1 = 0;
+fig2 = 1;
 
 %%
 if fig1==1
@@ -84,7 +84,7 @@ lg=legend('Titan Xm', 'Tesla V100 SXM2'); set(lg,'box','off')
 set(gca, 'XTick',diff_3D_mxpu_octo_2(1,:))
 xtickangle(45)
 set(gca,'fontname','Courier')
-xlabel('\bf{N (GPUs)}', 'fontsize',FS)
+xlabel('\bf{P (GPUs)}', 'fontsize',FS)
 
 fig = gcf;
 fig.PaperPositionMode = 'auto';
