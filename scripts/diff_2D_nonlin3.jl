@@ -20,13 +20,13 @@ macro av_yi_H3()    esc(:( @av_yi(H) * @av_yi(H) * @av_yi(H)       )) end
 macro av_xi_Re()    esc(:( π + sqrt(π*π + max_lxy2 / @av_xi_H3() / dt) )) end
 macro av_yi_Re()    esc(:( π + sqrt(π*π + max_lxy2 / @av_yi_H3() / dt) )) end
 macro Re()          esc(:( π + sqrt(π*π + max_lxy2 / @innH3()    / dt) )) end
-macro av_xi_τr_dt() esc(:( max_lxy / Vpdt / @av_xi_Re() * Resc      )) end
-macro av_yi_τr_dt() esc(:( max_lxy / Vpdt / @av_yi_Re() * Resc      )) end
+macro av_xi_θr_dt() esc(:( max_lxy / Vpdt / @av_xi_Re() * Resc      )) end
+macro av_yi_θr_dt() esc(:( max_lxy / Vpdt / @av_yi_Re() * Resc      )) end
 macro dt_ρ()        esc(:( Vpdt * max_lxy / @innH3() / @Re() * Resc )) end
 
 @parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, Vpdt, Resc, dt, max_lxy, max_lxy2, dx, dy)
-    @all(qHx)  = (@all(qHx) * @av_xi_τr_dt() - @av_xi_H3() * @d_xi(H) / dx) / (1.0 + @av_xi_τr_dt())
-    @all(qHy)  = (@all(qHy) * @av_yi_τr_dt() - @av_yi_H3() * @d_yi(H) / dy) / (1.0 + @av_yi_τr_dt())
+    @all(qHx)  = (@all(qHx) * @av_xi_θr_dt() - @av_xi_H3() * @d_xi(H) / dx) / (1.0 + @av_xi_θr_dt())
+    @all(qHy)  = (@all(qHy) * @av_yi_θr_dt() - @av_yi_H3() * @d_yi(H) / dy) / (1.0 + @av_yi_θr_dt())
     @all(qHx2) = -@av_xi_H3() * @d_xi(H) / dx
     @all(qHy2) = -@av_yi_H3() * @d_yi(H) / dy
     return

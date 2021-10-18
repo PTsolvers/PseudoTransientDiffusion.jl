@@ -11,21 +11,21 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-@parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, D, τr_τkin, dx, dy)
-    @all(qHx)  = (@all(qHx) * τr_τkin - D * @d_xi(H) / dx) / (1.0 + τr_τkin)
-    @all(qHy)  = (@all(qHy) * τr_τkin - D * @d_yi(H) / dy) / (1.0 + τr_τkin)
+@parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, D, θr_θkin, dx, dy)
+    @all(qHx)  = (@all(qHx) * θr_θkin - D * @d_xi(H) / dx) / (1.0 + θr_θkin)
+    @all(qHy)  = (@all(qHy) * θr_θkin - D * @d_yi(H) / dy) / (1.0 + θr_θkin)
     @all(qHx2) = -D * @d_xi(H) / dx
     @all(qHy2) = -D * @d_yi(H) / dy
     return
 end
 
-@parallel function compute_update!(H, Heq, qHx, qHy, τkin_ρ, τkin, dx, dy)
-    @inn(H) = (@inn(H) +  τkin_ρ * (@inn(Heq) / τkin - (@d_xa(qHx) / dx + @d_ya(qHy) / dy))) / (1.0 + τkin_ρ / τkin)
+@parallel function compute_update!(H, Heq, qHx, qHy, θkin_ρ, θkin, dx, dy)
+    @inn(H) = (@inn(H) +  θkin_ρ * (@inn(Heq) / θkin - (@d_xa(qHx) / dx + @d_ya(qHy) / dy))) / (1.0 + θkin_ρ / θkin)
     return
 end
 
-@parallel function check_res!(ResH, H, Heq, qHx2, qHy2, τkin, dx, dy)
-    @all(ResH) = -(@inn(H) - @inn(Heq)) / τkin - (@d_xa(qHx2) / dx + @d_ya(qHy2) / dy)
+@parallel function check_res!(ResH, H, Heq, qHx2, qHy2, θkin, dx, dy)
+    @all(ResH) = -(@inn(H) - @inn(Heq)) / θkin - (@d_xa(qHx2) / dx + @d_ya(qHy2) / dy)
     return
 end
 
@@ -33,19 +33,19 @@ end
     # Physics
     lx, ly  = 10.0, 10.0    # domain size
     D       = 1.0           # diffusion coefficient
-    τkin    = 0.1           # characteristic time of reaction
+    θkin    = 0.1           # characteristic time of reaction
     # Numerics
     # nx, ny  = 2*256, 2*256  # numerical grid resolution
     tol     = 1e-8          # tolerance
     itMax   = 1e5           # max number of iterations
     nout    = 10            # tol check
     CFL     = 1/sqrt(2)     # CFL number
-    Da      = π + sqrt(π^2 + (lx^2 / D / τkin)) # Numerical Reynolds number
+    Da      = π + sqrt(π^2 + (lx^2 / D / θkin)) # Numerical Reynolds number
     # Derived numerics
     dx, dy  = lx / nx, ly / ny  # grid size    
     Vpdt    = CFL * min(dx, dy)
-    τr_τkin = max(lx, ly) / Vpdt / Da
-    τkin_ρ  = Vpdt * max(lx, ly) / D / Da
+    θr_θkin = max(lx, ly) / Vpdt / Da
+    θkin_ρ  = Vpdt * max(lx, ly) / D / Da
     xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
     # Array allocation
     qHx     = @zeros(nx - 1,ny - 2)
@@ -61,11 +61,11 @@ end
     iter = 0; err = 2 * tol
     # Pseudo-transient iteration
     while err > tol && iter < itMax
-        @parallel compute_flux!(qHx, qHy, qHx2, qHy2, H, D, τr_τkin, dx, dy)
-        @parallel compute_update!(H, Heq, qHx, qHy, τkin_ρ, τkin, dx, dy)
+        @parallel compute_flux!(qHx, qHy, qHx2, qHy2, H, D, θr_θkin, dx, dy)
+        @parallel compute_update!(H, Heq, qHx, qHy, θkin_ρ, θkin, dx, dy)
         iter += 1
         if iter % nout == 0
-            @parallel check_res!(ResH, H, Heq, qHx2, qHy2, τkin, dx, dy)
+            @parallel check_res!(ResH, H, Heq, qHx2, qHy2, θkin, dx, dy)
             err = norm(ResH) / length(ResH)
         end
     end

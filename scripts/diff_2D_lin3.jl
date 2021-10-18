@@ -14,9 +14,9 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, D, τr_dt, dx, dy)
-    @all(qHx)  = (@all(qHx) * τr_dt - D * @d_xi(H) / dx) / (1.0 + τr_dt)
-    @all(qHy)  = (@all(qHy) * τr_dt - D * @d_yi(H) / dy) / (1.0 + τr_dt)
+@parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, D, θr_dt, dx, dy)
+    @all(qHx)  = (@all(qHx) * θr_dt - D * @d_xi(H) / dx) / (1.0 + θr_dt)
+    @all(qHy)  = (@all(qHy) * θr_dt - D * @d_yi(H) / dy) / (1.0 + θr_dt)
     @all(qHx2) = -D * @d_xi(H) / dx
     @all(qHy2) = -D * @d_yi(H) / dy
     return
@@ -48,7 +48,7 @@ end
     dx, dy  = lx / nx, ly / ny  # grid size    
     Vpdt    = CFL * min(dx, dy)
     Re      = π + sqrt(π^2 + (max(lx, ly)^2 / D / dt)) # Numerical Reynolds number
-    τr_dt   = max(lx, ly) / Vpdt / Re
+    θr_dt   = max(lx, ly) / Vpdt / Re
     dt_ρ    = Vpdt * max(lx, ly) / D / Re
     xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
     # Array allocation
@@ -67,7 +67,7 @@ end
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err > tol && iter < itMax
-            @parallel compute_flux!(qHx, qHy, qHx2, qHy2, H, D, τr_dt, dx, dy)
+            @parallel compute_flux!(qHx, qHy, qHx2, qHy2, H, D, θr_dt, dx, dy)
             @parallel compute_update!(H, Hold, qHx, qHy, dt_ρ, dt, dx, dy)
             iter += 1
             if iter % nout == 0

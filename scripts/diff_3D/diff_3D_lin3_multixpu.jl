@@ -20,10 +20,10 @@ norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WO
 
 @views inn(A) = A[2:end-1,2:end-1,2:end-1]
 
-@parallel function compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, τr_dt, dx, dy, dz)
-    @all(qHx)  = (@all(qHx) * τr_dt - D * @d_xi(H) / dx) / (1.0 + τr_dt)
-    @all(qHy)  = (@all(qHy) * τr_dt - D * @d_yi(H) / dy) / (1.0 + τr_dt)
-    @all(qHz)  = (@all(qHz) * τr_dt - D * @d_zi(H) / dz) / (1.0 + τr_dt)
+@parallel function compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, θr_dt, dx, dy, dz)
+    @all(qHx)  = (@all(qHx) * θr_dt - D * @d_xi(H) / dx) / (1.0 + θr_dt)
+    @all(qHy)  = (@all(qHy) * θr_dt - D * @d_yi(H) / dy) / (1.0 + θr_dt)
+    @all(qHz)  = (@all(qHz) * θr_dt - D * @d_zi(H) / dz) / (1.0 + θr_dt)
     @all(qHx2) = -D * @d_xi(H) / dx
     @all(qHy2) = -D * @d_yi(H) / dy
     @all(qHz2) = -D * @d_zi(H) / dz
@@ -58,7 +58,7 @@ end
     dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g() # cell sizes
     Vpdt       = CFL * min(dx, dy, dz)
     Re         = π + sqrt(π^2 + (max(lx, ly, lz)^2 / D / dt)) # Numerical Reynolds number
-    τr_dt      = max(lx, ly, lz) / Vpdt / Re
+    θr_dt      = max(lx, ly, lz) / Vpdt / Re
     dt_ρ       = Vpdt * max(lx, ly, lz) / D / Re
     xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
     # Array allocation
@@ -90,7 +90,7 @@ end
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, τr_dt, dx, dy, dz)
+            @parallel compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, θr_dt, dx, dy, dz)
             @hide_communication b_width begin # communication/computation overlap
                 @parallel compute_update!(H, Hold, qHx, qHy, qHz, dt_ρ, dt, dx, dy, dz)
                 update_halo!(H)

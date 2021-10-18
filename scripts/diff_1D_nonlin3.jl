@@ -17,11 +17,11 @@ macro innH3()    esc(:( @inn(H) * @inn(H) * @inn(H)          )) end
 macro avH3()     esc(:( @av(H) * @av(H) * @av(H)             )) end
 macro avRe()     esc(:( π + sqrt(π^2 + lx^2 / @avH3() / dt)  )) end
 macro Re()       esc(:( π + sqrt(π^2 + lx^2 / @innH3() / dt) )) end
-macro τr_dt()    esc(:( lx / Vpdt / @avRe()                  )) end
+macro θr_dt()    esc(:( lx / Vpdt / @avRe()                  )) end
 macro dt_ρ()     esc(:( Vpdt * lx / @innH3() / @Re()         )) end
 
 @parallel function compute_flux!(qHx, qHx2, H, Vpdt, dt, lx, dx)
-    @all(qHx)  = (@all(qHx) * @τr_dt() - @avH3() * @d(H) / dx) / (1.0 + @τr_dt())
+    @all(qHx)  = (@all(qHx) * @θr_dt() - @avH3() * @d(H) / dx) / (1.0 + @θr_dt())
     @all(qHx2) = -@avH3() * @d(H) / dx
     return
 end

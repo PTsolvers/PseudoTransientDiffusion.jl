@@ -13,14 +13,14 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_iter_params!(τr_dt, dt_ρ, D, Re, Vpdt, lx)
-    @all(τr_dt) = lx / Vpdt / Re
+@parallel function compute_iter_params!(θr_dt, dt_ρ, D, Re, Vpdt, lx)
+    @all(θr_dt) = lx / Vpdt / Re
     @all(dt_ρ)  = Vpdt * lx / @maxloc(D) / Re
     return
 end
 
-@parallel function compute_flux!(qHx, qHx2, H, D, τr_dt, dx)
-    @all(qHx)  = (@all(qHx) * @all(τr_dt) - @av(D) * @d(H) / dx) / (1.0 + @all(τr_dt))
+@parallel function compute_flux!(qHx, qHx2, H, D, θr_dt, dx)
+    @all(qHx)  = (@all(qHx) * @all(θr_dt) - @av(D) * @d(H) / dx) / (1.0 + @all(θr_dt))
     @all(qHx2) = -@av(D) * @d(H) / dx
     return
 end
@@ -63,7 +63,7 @@ end
     qHx    = @zeros(nx-1)
     qHx2   = @zeros(nx-1)
     ResH   = @zeros(nx-2)
-    τr_dt  = @zeros(nx-1)
+    θr_dt  = @zeros(nx-1)
     dt_ρ   = @zeros(nx-2)
     # Initial condition
     D      = D1 * @ones(nx)
@@ -71,14 +71,14 @@ end
     H0     = Data.Array(exp.(-xc.^2))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
-    @parallel compute_iter_params!(τr_dt, dt_ρ, D, Re, Vpdt, lx)
+    @parallel compute_iter_params!(θr_dt, dt_ρ, D, Re, Vpdt, lx)
     t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))
     # Physical time loop
     while it < nt
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err > tol && iter < itMax
-            @parallel compute_flux!(qHx, qHx2, H, D, τr_dt, dx)
+            @parallel compute_flux!(qHx, qHx2, H, D, θr_dt, dx)
             @parallel compute_update!(H, Hold, qHx, dt_ρ, dt, dx)
             iter += 1
             if iter % nout == 0

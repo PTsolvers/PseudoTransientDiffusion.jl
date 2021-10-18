@@ -10,19 +10,19 @@ else
 end
 using Plots, Printf, LinearAlgebra
 
-@parallel function compute_flux!(qHx, qHx2, H, D, τr_τkin, dx)
-    @all(qHx)  = (@all(qHx) * τr_τkin - D * @d(H) / dx) / (1.0 + τr_τkin)
+@parallel function compute_flux!(qHx, qHx2, H, D, θr_θkin, dx)
+    @all(qHx)  = (@all(qHx) * θr_θkin - D * @d(H) / dx) / (1.0 + θr_θkin)
     @all(qHx2) = -D * @d(H) / dx
     return
 end
 
-@parallel function compute_update!(H, Heq, qHx, τkin_ρ, τkin, dx)
-    @inn(H) = (@inn(H) +  τkin_ρ * (@inn(Heq) / τkin - @d(qHx) / dx)) / (1.0 + τkin_ρ / τkin)
+@parallel function compute_update!(H, Heq, qHx, θkin_ρ, θkin, dx)
+    @inn(H) = (@inn(H) +  θkin_ρ * (@inn(Heq) / θkin - @d(qHx) / dx)) / (1.0 + θkin_ρ / θkin)
     return
 end
 
-@parallel function check_res!(ResH, H, Heq, qHx2, τkin, dx)
-    @inn(ResH) = -(@inn(H) - @inn(Heq)) / τkin - @d(qHx2) / dx
+@parallel function check_res!(ResH, H, Heq, qHx2, θkin, dx)
+    @inn(ResH) = -(@inn(H) - @inn(Heq)) / θkin - @d(qHx2) / dx
     return
 end
 
@@ -30,19 +30,19 @@ end
     # Physics
     lx      = 20.0       # domain size
     D       = 1          # diffusion coefficient
-    τkin    = 0.1        # characteristic time of reaction
+    θkin    = 0.1        # characteristic time of reaction
     # Numerics
     # nx     = 2*256      # numerical grid resolution
     tol     = 1e-8       # tolerance
     itMax   = 1e5        # max number of iterations
     nout    = 10         # tol check
     CFL     = 1.0        # CFL number
-    Da      = π + sqrt(π^2 + (lx^2 / D / τkin)) # Numerical Reynolds number
+    Da      = π + sqrt(π^2 + (lx^2 / D / θkin)) # Numerical Reynolds number
     # Derived numerics
     dx      = lx / nx      # grid size
     Vpdt    = CFL * dx
-    τr_τkin = lx / Vpdt / Da
-    τkin_ρ  = Vpdt * lx / D / Da
+    θr_θkin = lx / Vpdt / Da
+    θkin_ρ  = Vpdt * lx / D / Da
     xc      = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
     qHx     = @zeros(nx - 1)
@@ -56,11 +56,11 @@ end
     iter = 0; err = 2 * tol
     # Pseudo-transient iteration
     while err > tol && iter < itMax
-        @parallel compute_flux!(qHx, qHx2, H, D, τr_τkin, dx)
-        @parallel compute_update!(H, Heq, qHx, τkin_ρ, τkin, dx)
+        @parallel compute_flux!(qHx, qHx2, H, D, θr_θkin, dx)
+        @parallel compute_update!(H, Heq, qHx, θkin_ρ, θkin, dx)
         iter += 1
         if iter % nout == 0
-            @parallel check_res!(ResH, H, Heq, qHx2, τkin, dx)
+            @parallel check_res!(ResH, H, Heq, qHx2, θkin, dx)
             err = norm(ResH) / length(ResH)
         end
     end

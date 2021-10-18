@@ -13,8 +13,8 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_flux!(qHx, qHx2, H, D, τr_dt, dx)
-    @all(qHx)  = (@all(qHx) * τr_dt - D * @d(H) / dx) / (1.0 + τr_dt)
+@parallel function compute_flux!(qHx, qHx2, H, D, θr_dt, dx)
+    @all(qHx)  = (@all(qHx) * θr_dt - D * @d(H) / dx) / (1.0 + θr_dt)
     @all(qHx2) = -D * @d(H) / dx
     return
 end
@@ -45,7 +45,7 @@ end
     dx     = lx / nx      # grid size
     Vpdt   = CFL * dx
     Re     = π + sqrt(π^2 + (lx^2 / D / dt)) # Numerical Reynolds number
-    τr_dt  = lx / Vpdt / Re
+    θr_dt  = lx / Vpdt / Re
     dt_ρ   = Vpdt * lx / D / Re
     xc     = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
@@ -63,7 +63,7 @@ end
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err > tol && iter < itMax
-            @parallel compute_flux!(qHx, qHx2, H, D, τr_dt, dx)
+            @parallel compute_flux!(qHx, qHx2, H, D, θr_dt, dx)
             @parallel compute_update!(H, Hold, qHx, dt_ρ, dt, dx)
             iter += 1
             if iter % nout == 0

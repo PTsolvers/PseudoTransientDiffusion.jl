@@ -28,15 +28,15 @@ macro av_xi_Re(ix,iy,iz)    esc(:( π + sqrt(π*π + max_lxyz2 / @av_xi_H3($ix,$
 macro av_yi_Re(ix,iy,iz)    esc(:( π + sqrt(π*π + max_lxyz2 / @av_yi_H3($ix,$iy,$iz) * _dt) )) end
 macro av_zi_Re(ix,iy,iz)    esc(:( π + sqrt(π*π + max_lxyz2 / @av_zi_H3($ix,$iy,$iz) * _dt) )) end
 macro Re(ix,iy,iz)          esc(:( π + sqrt(π*π + max_lxyz2 / @innH3($ix,$iy,$iz)    * _dt) )) end
-macro av_xi_τr_dt(ix,iy,iz) esc(:( max_lxyz / Vpdt / @av_xi_Re($ix,$iy,$iz) * Resc )) end
-macro av_yi_τr_dt(ix,iy,iz) esc(:( max_lxyz / Vpdt / @av_yi_Re($ix,$iy,$iz) * Resc )) end
-macro av_zi_τr_dt(ix,iy,iz) esc(:( max_lxyz / Vpdt / @av_zi_Re($ix,$iy,$iz) * Resc )) end
+macro av_xi_θr_dt(ix,iy,iz) esc(:( max_lxyz / Vpdt / @av_xi_Re($ix,$iy,$iz) * Resc )) end
+macro av_yi_θr_dt(ix,iy,iz) esc(:( max_lxyz / Vpdt / @av_yi_Re($ix,$iy,$iz) * Resc )) end
+macro av_zi_θr_dt(ix,iy,iz) esc(:( max_lxyz / Vpdt / @av_zi_Re($ix,$iy,$iz) * Resc )) end
 macro dt_ρ(ix,iy,iz)        esc(:( Vpdt * max_lxyz / @innH3($ix,$iy,$iz) / @Re($ix,$iy,$iz) * Resc )) end
 
 @parallel_indices (ix,iy,iz) function compute_flux!(qHx, qHy, qHz, H, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz)
-    if (ix<=size(qHx,1) && iy<=size(qHx,2) && iz<=size(qHx,3)) qHx[ix,iy,iz]  = (qHx[ix,iy,iz] * @av_xi_τr_dt(ix,iy,iz) - @av_xi_H3(ix,iy,iz) * _dx * (H[ix+1,iy+1,iz+1] - H[ix,iy+1,iz+1]) ) / (1.0 + @av_xi_τr_dt(ix,iy,iz))  end
-    if (ix<=size(qHy,1) && iy<=size(qHy,2) && iz<=size(qHy,3)) qHy[ix,iy,iz]  = (qHy[ix,iy,iz] * @av_yi_τr_dt(ix,iy,iz) - @av_yi_H3(ix,iy,iz) * _dy * (H[ix+1,iy+1,iz+1] - H[ix+1,iy,iz+1]) ) / (1.0 + @av_yi_τr_dt(ix,iy,iz))  end
-    if (ix<=size(qHz,1) && iy<=size(qHz,2) && iz<=size(qHz,3)) qHz[ix,iy,iz]  = (qHz[ix,iy,iz] * @av_zi_τr_dt(ix,iy,iz) - @av_zi_H3(ix,iy,iz) * _dz * (H[ix+1,iy+1,iz+1] - H[ix+1,iy+1,iz]) ) / (1.0 + @av_zi_τr_dt(ix,iy,iz))  end
+    if (ix<=size(qHx,1) && iy<=size(qHx,2) && iz<=size(qHx,3)) qHx[ix,iy,iz]  = (qHx[ix,iy,iz] * @av_xi_θr_dt(ix,iy,iz) - @av_xi_H3(ix,iy,iz) * _dx * (H[ix+1,iy+1,iz+1] - H[ix,iy+1,iz+1]) ) / (1.0 + @av_xi_θr_dt(ix,iy,iz))  end
+    if (ix<=size(qHy,1) && iy<=size(qHy,2) && iz<=size(qHy,3)) qHy[ix,iy,iz]  = (qHy[ix,iy,iz] * @av_yi_θr_dt(ix,iy,iz) - @av_yi_H3(ix,iy,iz) * _dy * (H[ix+1,iy+1,iz+1] - H[ix+1,iy,iz+1]) ) / (1.0 + @av_yi_θr_dt(ix,iy,iz))  end
+    if (ix<=size(qHz,1) && iy<=size(qHz,2) && iz<=size(qHz,3)) qHz[ix,iy,iz]  = (qHz[ix,iy,iz] * @av_zi_θr_dt(ix,iy,iz) - @av_zi_H3(ix,iy,iz) * _dz * (H[ix+1,iy+1,iz+1] - H[ix+1,iy+1,iz]) ) / (1.0 + @av_zi_θr_dt(ix,iy,iz))  end
     return
 end
 

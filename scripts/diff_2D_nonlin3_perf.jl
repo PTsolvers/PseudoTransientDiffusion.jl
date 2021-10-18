@@ -21,13 +21,13 @@ macro av_yi_H3(ix,iy)    esc(:( 0.5*(H[$ix+1,$iy]+H[$ix+1,$iy+1]) * 0.5*(H[$ix+1
 macro av_xi_Re(ix,iy)    esc(:( π + sqrt(π*π + max_lxy2 / @av_xi_H3($ix,$iy) * _dt) )) end
 macro av_yi_Re(ix,iy)    esc(:( π + sqrt(π*π + max_lxy2 / @av_yi_H3($ix,$iy) * _dt) )) end
 macro Re(ix,iy)          esc(:( π + sqrt(π*π + max_lxy2 / @innH3($ix,$iy)    * _dt) )) end
-macro av_xi_τr_dt(ix,iy) esc(:( max_lxy / Vpdt / @av_xi_Re($ix,$iy) * Resc )) end
-macro av_yi_τr_dt(ix,iy) esc(:( max_lxy / Vpdt / @av_yi_Re($ix,$iy) * Resc )) end
+macro av_xi_θr_dt(ix,iy) esc(:( max_lxy / Vpdt / @av_xi_Re($ix,$iy) * Resc )) end
+macro av_yi_θr_dt(ix,iy) esc(:( max_lxy / Vpdt / @av_yi_Re($ix,$iy) * Resc )) end
 macro dt_ρ(ix,iy)        esc(:( Vpdt * max_lxy / @innH3($ix,$iy) / @Re($ix,$iy) * Resc )) end
 
 @parallel_indices (ix,iy) function compute_flux!(qHx, qHy, H, Vpdt, Resc, _dt, max_lxy, max_lxy2, _dx, _dy)
-    if (ix<=size(qHx,1) && iy<=size(qHx,2))  qHx[ix,iy]  = (qHx[ix,iy] * @av_xi_τr_dt(ix,iy) - @av_xi_H3(ix,iy) * _dx * (H[ix+1,iy+1] - H[ix,iy+1]) ) / (1.0 + @av_xi_τr_dt(ix,iy))  end
-    if (ix<=size(qHy,1) && iy<=size(qHy,2))  qHy[ix,iy]  = (qHy[ix,iy] * @av_yi_τr_dt(ix,iy) - @av_yi_H3(ix,iy) * _dy * (H[ix+1,iy+1] - H[ix+1,iy]) ) / (1.0 + @av_yi_τr_dt(ix,iy))  end
+    if (ix<=size(qHx,1) && iy<=size(qHx,2))  qHx[ix,iy]  = (qHx[ix,iy] * @av_xi_θr_dt(ix,iy) - @av_xi_H3(ix,iy) * _dx * (H[ix+1,iy+1] - H[ix,iy+1]) ) / (1.0 + @av_xi_θr_dt(ix,iy))  end
+    if (ix<=size(qHy,1) && iy<=size(qHy,2))  qHy[ix,iy]  = (qHy[ix,iy] * @av_yi_θr_dt(ix,iy) - @av_yi_H3(ix,iy) * _dy * (H[ix+1,iy+1] - H[ix+1,iy]) ) / (1.0 + @av_yi_θr_dt(ix,iy))  end
     return
 end
 

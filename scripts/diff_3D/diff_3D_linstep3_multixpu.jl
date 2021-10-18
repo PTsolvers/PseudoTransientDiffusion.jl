@@ -20,16 +20,16 @@ norm_g(A) = (sum2_l = sum(A.^2); sqrt(MPI.Allreduce(sum2_l, MPI.SUM, MPI.COMM_WO
 
 @views inn(A) = A[2:end-1,2:end-1,2:end-1]
 
-@parallel function compute_iter_params!(τr_dt, dt_ρ, D, Re, Vpdt, max_lxyz)
-    @all(τr_dt) = max_lxyz / Vpdt / Re
+@parallel function compute_iter_params!(θr_dt, dt_ρ, D, Re, Vpdt, max_lxyz)
+    @all(θr_dt) = max_lxyz / Vpdt / Re
     @all(dt_ρ)  = Vpdt * max_lxyz / @maxloc(D) / Re
     return
 end
 
-@parallel function compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, τr_dt, dx, dy, dz)
-    @all(qHx)  = (@all(qHx) * @av_xi(τr_dt) - @av_xi(D) * @d_xi(H) / dx) / (1.0 + @av_xi(τr_dt))
-    @all(qHy)  = (@all(qHy) * @av_yi(τr_dt) - @av_yi(D) * @d_yi(H) / dy) / (1.0 + @av_yi(τr_dt))
-    @all(qHz)  = (@all(qHz) * @av_zi(τr_dt) - @av_zi(D) * @d_zi(H) / dz) / (1.0 + @av_zi(τr_dt))
+@parallel function compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, θr_dt, dx, dy, dz)
+    @all(qHx)  = (@all(qHx) * @av_xi(θr_dt) - @av_xi(D) * @d_xi(H) / dx) / (1.0 + @av_xi(θr_dt))
+    @all(qHy)  = (@all(qHy) * @av_yi(θr_dt) - @av_yi(D) * @d_yi(H) / dy) / (1.0 + @av_yi(θr_dt))
+    @all(qHz)  = (@all(qHz) * @av_zi(θr_dt) - @av_zi(D) * @d_zi(H) / dz) / (1.0 + @av_zi(θr_dt))
     @all(qHx2) = -@av_xi(D) * @d_xi(H) / dx
     @all(qHy2) = -@av_yi(D) * @d_yi(H) / dy
     @all(qHz2) = -@av_zi(D) * @d_zi(H) / dz
@@ -93,7 +93,7 @@ end
     qHy2       = @zeros(nx-2,ny-1,nz-2)
     qHz2       = @zeros(nx-2,ny-2,nz-1)
     ResH       = @zeros(nx-2,ny-2,nz-2)
-    τr_dt      = @zeros(nx  ,ny  ,nz  )
+    θr_dt      = @zeros(nx  ,ny  ,nz  )
     dt_ρ       = @zeros(nx-2,ny-2,nz-2)
     # Initial condition
     H0         =   zeros(nx,ny,nz)
@@ -106,7 +106,7 @@ end
     H0         = Data.Array([exp(-(x_g(ix,dx,H0)-0.5*lx+dx/2)*(x_g(ix,dx,H0)-0.5*lx+dx/2) - (y_g(iy,dy,H0)-0.5*ly+dy/2)*(y_g(iy,dy,H0)-0.5*ly+dy/2) - (z_g(iz,dz,H0)-0.5*lz+dz/2)*(z_g(iz,dz,H0)-0.5*lz+dz/2)) for ix=1:size(H0,1), iy=1:size(H0,2), iz=1:size(H0,3)])
     Hold       = @ones(nx,ny,nz) .* H0
     H          = @ones(nx,ny,nz) .* H0
-    @parallel compute_iter_params!(τr_dt, dt_ρ, D, Re, Vpdt, max_lxyz)
+    @parallel compute_iter_params!(θr_dt, dt_ρ, D, Re, Vpdt, max_lxyz)
     len_ResH_g = ((nx-2-2)*dims[1]+2)*((ny-2-2)*dims[2]+2)*((nz-2-2)*dims[3]+2)
     if do_viz || do_save_viz
         if (me==0) ENV["GKSwstype"]="nul"; if do_viz !ispath("../../figures") && mkdir("../../figures") end; end
@@ -123,7 +123,7 @@ end
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, τr_dt, dx, dy, dz)
+            @parallel compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, D, θr_dt, dx, dy, dz)
             @hide_communication b_width begin # communication/computation overlap
                 @parallel compute_update!(H, Hold, qHx, qHy, qHz, dt_ρ, dt, dx, dy, dz)
                 update_halo!(H)
