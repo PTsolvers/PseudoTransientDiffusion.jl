@@ -1,15 +1,15 @@
 clear
 %% symbolic functions and variables
 syms H(t,x) q(t,x)
-syms D Lx tau_r rho Re H0 k positive
+syms D Lx theta_r rho Re H0 k positive
 syms lambda_k
 %% governing equations
-eq1      =   rho*diff(H(t,x),t)          +   diff(q(t,x),x);               % mass balace
-eq2      = tau_r*diff(q(t,x),t) + q(t,x) + D*diff(H(t,x),x);               % momentum balance
+eq1      =     rho*diff(H(t,x),t)          +   diff(q(t,x),x);             % mass balace
+eq2      = theta_r*diff(q(t,x),t) + q(t,x) + D*diff(H(t,x),x);             % momentum balance
 %% equation for H
-eq_H     = expand(diff(eq1,t)*tau_r - diff(eq2,x) + eq1);
+eq_H     = expand(diff(eq1,t)*theta_r - diff(eq2,x) + eq1);
 %% scales and nondimensional variables
-V_p      = sqrt(D/rho/tau_r);                                              % velocity scale - wave velocity
+V_p      = sqrt(D/rho/theta_r);                                            % velocity scale - wave velocity
 rho      = solve(Re == rho*V_p*Lx/D,rho);                                  % density from Reynolds number Re
 %% dispersion relation
 H(t,x)   = H0*exp(-lambda_k*V_p*t/Lx)*sin(pi*k*x/Lx);                      % Fourier term
