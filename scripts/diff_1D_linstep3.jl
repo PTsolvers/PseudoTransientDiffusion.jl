@@ -104,7 +104,6 @@ end
         matwrite("../out_visu/diff_1D_linstep3.mat", Dict("H_1D"=> Array(H), "xc_1D"=> Array(xc)); compress = true)
     end
     return
-    return
 end
 
 diffusion_1D()
