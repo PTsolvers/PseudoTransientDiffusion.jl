@@ -14,15 +14,14 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_iter_params!(θr_dt, dt_ρ, D, Re, Vpdt, max_lxy)
-    @all(θr_dt) = max_lxy / Vpdt / Re
-    @all(dt_ρ)  = Vpdt * max_lxy / @maxloc(D) / Re
+@parallel function compute_iter_params!(dt_ρ, D, Re, Vpdt, max_lxy)
+    @all(dt_ρ) = Vpdt * max_lxy / @maxloc(D) / Re
     return
 end
 
 @parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, D, θr_dt, dx, dy)
-    @all(qHx)  = (@all(qHx) * @av_xi(θr_dt) - @av_xi(D) * @d_xi(H) / dx) / (1.0 + @av_xi(θr_dt))
-    @all(qHy)  = (@all(qHy) * @av_yi(θr_dt) - @av_yi(D) * @d_yi(H) / dy) / (1.0 + @av_yi(θr_dt))
+    @all(qHx)  = (@all(qHx) * θr_dt - @av_xi(D) * @d_xi(H) / dx) / (1.0 + θr_dt)
+    @all(qHy)  = (@all(qHy) * θr_dt - @av_yi(D) * @d_yi(H) / dy) / (1.0 + θr_dt)
     @all(qHx2) = -@av_xi(D) * @d_xi(H) / dx
     @all(qHy2) = -@av_yi(D) * @d_yi(H) / dy
     return
@@ -73,6 +72,7 @@ end
     Vpdt    = CFL * min(dx, dy)
     max_lxy = max(lx, ly)
     Re      = π + sqrt(π^2 + (max_lxy^2 / max(D1,D2)) / dt)
+    θr_dt   = max_lxy / Vpdt / Re
     xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
     # Array allocation
     qHx     = @zeros(nx-1, ny-2)
@@ -80,7 +80,6 @@ end
     qHx2    = @zeros(nx-1, ny-2)
     qHy2    = @zeros(nx-2, ny-1)
     ResH    = @zeros(nx-2, ny-2)
-    θr_dt   = @zeros(nx  , ny  )
     dt_ρ    = @zeros(nx-2, ny-2)
     # Initial condition
     D       = D1 * @ones(nx,ny)
@@ -89,7 +88,7 @@ end
     H0      = Data.Array(exp.(-xc.^2 .- (yc').^2))
     Hold    = @ones(nx,ny) .* H0
     H       = @ones(nx,ny) .* H0
-    @parallel compute_iter_params!(θr_dt, dt_ρ, D, Re, Vpdt, max_lxy)
+    @parallel compute_iter_params!(dt_ρ, D, Re, Vpdt, max_lxy)
     t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))
     # Physical time loop
     while it < nt

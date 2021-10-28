@@ -13,14 +13,13 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_iter_params!(θr_dt, dt_ρ, D, Re, Vpdt, lx)
-    @all(θr_dt) = lx / Vpdt / Re
-    @all(dt_ρ)  = Vpdt * lx / @maxloc(D) / Re
+@parallel function compute_iter_params!(dt_ρ, D, Re, Vpdt, lx)
+    @all(dt_ρ) = Vpdt * lx / @maxloc(D) / Re
     return
 end
 
 @parallel function compute_flux!(qHx, qHx2, H, D, θr_dt, dx)
-    @all(qHx)  = (@all(qHx) * @all(θr_dt) - @av(D) * @d(H) / dx) / (1.0 + @all(θr_dt))
+    @all(qHx)  = (@all(qHx) * θr_dt - @av(D) * @d(H) / dx) / (1.0 + θr_dt)
     @all(qHx2) = -@av(D) * @d(H) / dx
     return
 end
@@ -58,12 +57,12 @@ end
     dx     = lx / nx      # grid size
     Vpdt   = CFL * dx
     Re     = π + sqrt(π^2 + (lx^2 / max(D1,D2)) / dt)
+    θr_dt  = lx / Vpdt / Re
     xc     = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
     qHx2   = @zeros(nx-1)
     ResH   = @zeros(nx-2)
-    θr_dt  = @zeros(nx-1)
     dt_ρ   = @zeros(nx-2)
     # Initial condition
     D      = D1 * @ones(nx)
@@ -71,7 +70,7 @@ end
     H0     = Data.Array(exp.(-xc.^2))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
-    @parallel compute_iter_params!(θr_dt, dt_ρ, D, Re, Vpdt, lx)
+    @parallel compute_iter_params!(dt_ρ, D, Re, Vpdt, lx)
     t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))
     # Physical time loop
     while it < nt
