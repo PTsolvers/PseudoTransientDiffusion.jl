@@ -1,19 +1,19 @@
 clear
 %% symbolic functions and variables
-syms H(t,x) q(t,x)
+syms H(tau,x) q(tau,x)
 syms D Lx theta_r rho Re H0 k positive
 syms lambda_k
 %% governing equations
-eq1      =     rho*diff(H(t,x),t)          +   diff(q(t,x),x);             % mass balace
-eq2      = theta_r*diff(q(t,x),t) + q(t,x) + D*diff(H(t,x),x);             % momentum balance
+eq1      =     rho*diff(H(tau,x),tau)          +   diff(q(tau,x),x);       % mass balace
+eq2      = theta_r*diff(q(tau,x),tau) + q(tau,x) + D*diff(H(tau,x),x);     % momentum balance
 %% equation for H
-eq_H     = expand(diff(eq1,t)*theta_r - diff(eq2,x) + eq1);
+eq_H     = expand(diff(eq1,tau)*theta_r - diff(eq2,x) + eq1);
 %% scales and nondimensional variables
 V_p      = sqrt(D/rho/theta_r);                                            % velocity scale - wave velocity
 rho      = solve(Re == rho*V_p*Lx/D,rho);                                  % density from Reynolds number Re
 %% dispersion relation
-H(t,x)   = H0*exp(-lambda_k*V_p*t/Lx)*sin(pi*k*x/Lx);                      % Fourier term
-disp_rel = expand(subs(subs(eq_H/H(t,x))));
+H(tau,x)   = H0*exp(-lambda_k*V_p*tau/Lx)*sin(pi*k*x/Lx);                  % Fourier term
+disp_rel = expand(subs(subs(eq_H/H(tau,x))));
 cfs      = coeffs(disp_rel,lambda_k);
 disp_rel = collect(simplify(disp_rel/cfs(end)),[lambda_k,pi,k]);
 cfs      = coeffs(disp_rel,lambda_k);
@@ -33,7 +33,8 @@ plot(Re1,num_lam,'r-','LineWidth',1);axis square;grid on
 xlim([min(Re1) max(Re1)])
 xline(double(Re_opt),'k--','LineWidth',2,'Alpha',1)
 ax = gca;
-xlabel('$Re$','Interpreter','latex');ylabel('$\mathrm{max}\{\Re(\lambda_k)\}$','Interpreter','latex')
+xlabel('$Re$','Interpreter','latex')
+ylabel('$\mathrm{min}\{\Re(\lambda_k)\}$','Interpreter','latex')
 xticks([0 pi 2*pi 3*pi 4*pi])
 xticklabels({'$0$','$\pi$','$2\pi$','$3\pi$','$4\pi$'})
 ax.XAxis.TickLabelInterpreter = 'latex';
