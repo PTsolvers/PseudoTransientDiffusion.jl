@@ -1,19 +1,19 @@
 clear
 
 % load scaling_data
-fid = fopen('../output/out_diff_2D_nonlin3_perf_octo.txt' ,'r'); diff_2D_octo  = fscanf(fid, '%d %d %d %f %f %f %f', [7 Inf]); fclose(fid); % nx ny ittot t_toc A_eff t_it T_eff
-fid = fopen('../output/out_diff_2D_nonlin3_perf_volta.txt','r'); diff_2D_volta = fscanf(fid, '%d %d %d %f %f %f %f', [7 Inf]); fclose(fid); % nx ny ittot t_toc A_eff t_it T_eff
-fid = fopen('../output/out_diff_2D_nonlin3_perf_daint.txt','r'); diff_2D_daint = fscanf(fid, '%d %d %d %f %f %f %f', [7 Inf]); fclose(fid); % nx ny ittot t_toc A_eff t_it T_eff
-fid = fopen('../output/out_diff_3D_nonlin3_perf_octo.txt' ,'r'); diff_3D_octo  = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
-fid = fopen('../output/out_diff_3D_nonlin3_perf_volta.txt','r'); diff_3D_volta = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
-fid = fopen('../output/out_diff_3D_nonlin3_perf_daint.txt','r'); diff_3D_daint = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
-fid = fopen('../../PseudoTransientStokes/output/out_Stokes3D_ve3_perf_octo.txt' ,'r'); stokes_3D_octo  = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
-fid = fopen('../../PseudoTransientStokes/output/out_Stokes3D_ve3_perf_volta.txt','r'); stokes_3D_volta = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
+fid = fopen('../output/out_diff_2D_nonlin_perf_octo.txt' ,'r'); diff_2D_octo  = fscanf(fid, '%d %d %d %f %f %f %f', [7 Inf]); fclose(fid); % nx ny ittot t_toc A_eff t_it T_eff
+fid = fopen('../output/out_diff_2D_nonlin_perf_volta.txt','r'); diff_2D_volta = fscanf(fid, '%d %d %d %f %f %f %f', [7 Inf]); fclose(fid); % nx ny ittot t_toc A_eff t_it T_eff
+fid = fopen('../output/out_diff_2D_nonlin_perf_daint.txt','r'); diff_2D_daint = fscanf(fid, '%d %d %d %f %f %f %f', [7 Inf]); fclose(fid); % nx ny ittot t_toc A_eff t_it T_eff
+fid = fopen('../output/out_diff_3D_nonlin_perf_octo.txt' ,'r'); diff_3D_octo  = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
+fid = fopen('../output/out_diff_3D_nonlin_perf_volta.txt','r'); diff_3D_volta = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
+fid = fopen('../output/out_diff_3D_nonlin_perf_daint.txt','r'); diff_3D_daint = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
+fid = fopen('../../PseudoTransientStokes/output/out_Stokes3D_ve_perf_octo.txt' ,'r'); stokes_3D_octo  = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
+fid = fopen('../../PseudoTransientStokes/output/out_Stokes3D_ve_perf_volta.txt','r'); stokes_3D_volta = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
 
-fid = fopen('../output/out_diff_3D_nonlin3_multixpu_perf_octo.txt' ,'r'); diff_3D_mxpu_octo  = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
-fid = fopen('../output/out_diff_3D_nonlin3_multixpu_perf_volta.txt','r'); diff_3D_mxpu_volta = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
-fid = fopen('../../PseudoTransientStokes/output/out_Stokes3D_ve3_xpu_perf_octo.txt' ,'r'); stokes_3D_mxpu_octo  = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
-fid = fopen('../../PseudoTransientStokes/output/out_Stokes3D_ve3_xpu_perf_volta.txt','r'); stokes_3D_mxpu_volta = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
+fid = fopen('../output/out_diff_3D_nonlin_multixpu_perf_octo.txt' ,'r'); diff_3D_mxpu_octo  = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
+fid = fopen('../output/out_diff_3D_nonlin_multixpu_perf_volta.txt','r'); diff_3D_mxpu_volta = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
+fid = fopen('../../PseudoTransientStokes/output/out_Stokes3D_ve_xpu_perf_octo.txt' ,'r'); stokes_3D_mxpu_octo  = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
+fid = fopen('../../PseudoTransientStokes/output/out_Stokes3D_ve_xpu_perf_volta.txt','r'); stokes_3D_mxpu_volta = fscanf(fid, '%d %d %d %d %d %f %f %f %f', [9 Inf]); fclose(fid); % np nx ny nz ittot t_toc A_eff t_it T_eff
 
 nrep  = 5; % number of repetitions of the experiment
 nrep2 = 2; % number of repetitions of the experiment

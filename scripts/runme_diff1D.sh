@@ -9,7 +9,7 @@ module load cuda/11.2
 julia_=$(which julia)
 
 RESOL_1D=( 32 64 128 256 512 1024 2048 4096 8192 16384 )
-declare -a RUN_1D=( "diff_1D_lin3" "diff_1D_linstep3" "diff_1D_nonlin3" )
+declare -a RUN_1D=( "diff_1D_lin" "diff_1D_linstep" "diff_1D_nonlin" )
 
 USE_GPU=true
 

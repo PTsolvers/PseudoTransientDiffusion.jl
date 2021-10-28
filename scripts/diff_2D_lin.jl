@@ -84,13 +84,13 @@ end
     if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0, 1), title="linear diffusion (nt=$it, iters=$ittot)")) end
     if do_save
         !ispath("../output") && mkdir("../output")
-        open("../output/out_diff_2D_lin3.txt","a") do io
+        open("../output/out_diff_2D_lin.txt","a") do io
             println(io, "$(nx) $(ny) $(ittot) $(nt)")
         end
     end
     if do_save_viz
         !ispath("../out_visu") && mkdir("../out_visu")
-        matwrite("../out_visu/diff_2D_lin3.mat", Dict("H_2D"=> Array(H), "xc_2D"=> Array(xc), "yc_2D"=> Array(yc)); compress = true)
+        matwrite("../out_visu/diff_2D_lin.mat", Dict("H_2D"=> Array(H), "xc_2D"=> Array(xc), "yc_2D"=> Array(yc)); compress = true)
     end
     return
 end

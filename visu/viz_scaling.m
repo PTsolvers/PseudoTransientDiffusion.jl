@@ -1,17 +1,17 @@
 clear
 
 % load scaling_data
-fid = fopen('../output/out_diff_1D_lin3.txt'         ,'r'); diff_1D_lin3 = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_2D_lin3.txt'         ,'r'); diff_2D_lin3 = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_3D_lin3_multixpu.txt','r'); diff_3D_lin3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_1D_lin.txt'         ,'r'); diff_1D_lin = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_2D_lin.txt'         ,'r'); diff_2D_lin = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_3D_lin_multixpu.txt','r'); diff_3D_lin = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
 
-fid = fopen('../output/out_diff_1D_linstep3.txt'         ,'r'); diff_1D_linstep3 = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_2D_linstep3.txt'         ,'r'); diff_2D_linstep3 = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_3D_linstep3_multixpu.txt','r'); diff_3D_linstep3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_1D_linstep.txt'         ,'r'); diff_1D_linstep = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_2D_linstep.txt'         ,'r'); diff_2D_linstep = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_3D_linstep_multixpu.txt','r'); diff_3D_linstep = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
 
-fid = fopen('../output/out_diff_1D_nonlin3.txt'         ,'r'); diff_1D_nonlin3 = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_2D_nonlin3.txt'         ,'r'); diff_2D_nonlin3 = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
-fid = fopen('../output/out_diff_3D_nonlin3_multixpu.txt','r'); diff_3D_nonlin3 = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_1D_nonlin.txt'         ,'r'); diff_1D_nonlin = fscanf(fid, '%d %d %d',       [3 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_2D_nonlin.txt'         ,'r'); diff_2D_nonlin = fscanf(fid, '%d %d %d %d',    [4 Inf]); fclose(fid);
+fid = fopen('../output/out_diff_3D_nonlin_multixpu.txt','r'); diff_3D_nonlin = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
 
 FS = 20;
 mylim = [0.02 1.04];
@@ -26,14 +26,14 @@ figure(2),clf,set(gcf,'color','white','pos',[1400 10 1000 400])
 % 1D
 sp1 = subplot(131);
 st = 2;
-semilogx(diff_1D_lin3(1,st:end), diff_1D_lin3(2,st:end)./diff_1D_lin3(1,st:end)./diff_1D_lin3(3,st:end),'-o', ...
-         diff_2D_lin3(1,st:end), diff_2D_lin3(3,st:end)./diff_2D_lin3(1,st:end)./diff_2D_lin3(4,st:end),'-o', ...
-         diff_3D_lin3(1,1:end),  diff_3D_lin3(4,1:end)./ diff_3D_lin3(1,1:end)./ diff_3D_lin3(5,1:end),'-o', ...
+semilogx(diff_1D_lin(1,st:end), diff_1D_lin(2,st:end)./diff_1D_lin(1,st:end)./diff_1D_lin(3,st:end),'-o', ...
+         diff_2D_lin(1,st:end), diff_2D_lin(3,st:end)./diff_2D_lin(1,st:end)./diff_2D_lin(4,st:end),'-o', ...
+         diff_3D_lin(1,1:end),  diff_3D_lin(4,1:end)./ diff_3D_lin(1,1:end)./ diff_3D_lin(5,1:end),'-o', ...
          'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 ylabel({' ';'\bf{iter_{tot}/nt/nx}'}, 'fontsize',FS)
 ylim(mylim)
 % lg=legend('1D', '2D', '3D'); set(lg,'box','off')
-set(gca, 'XTick',diff_1D_lin3(1,st:end))
+set(gca, 'XTick',diff_1D_lin(1,st:end))
 xtickangle(45)
 xlabel('\bf{nx}', 'fontsize',FS)
 title({'linear'; 'diffusion'})
@@ -42,13 +42,13 @@ text(85,ylab,'a)','fontsize',FS+2,'fontname','Courier')
 
 sp2 = subplot(132);
 st = 2;
-semilogx(diff_1D_linstep3(1,st:end), diff_1D_linstep3(2,st:end)./diff_1D_linstep3(1,st:end)./diff_1D_linstep3(3,st:end),'-o', ...
-         diff_2D_linstep3(1,st:end), diff_2D_linstep3(3,st:end)./diff_2D_linstep3(1,st:end)./diff_2D_linstep3(4,st:end),'-o', ...
-         diff_3D_linstep3(1,1:end),  diff_3D_linstep3(4,1:end)./diff_3D_linstep3(1,1:end)./diff_3D_linstep3(5,1:end),'-o', ...
+semilogx(diff_1D_linstep(1,st:end), diff_1D_linstep(2,st:end)./diff_1D_linstep(1,st:end)./diff_1D_linstep(3,st:end),'-o', ...
+         diff_2D_linstep(1,st:end), diff_2D_linstep(3,st:end)./diff_2D_linstep(1,st:end)./diff_2D_linstep(4,st:end),'-o', ...
+         diff_3D_linstep(1,1:end),  diff_3D_linstep(4,1:end)./diff_3D_linstep(1,1:end)./diff_3D_linstep(5,1:end),'-o', ...
          'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 title({'linear step'; 'diffusion'})
 ylim(mylim)
-set(gca, 'XTick',diff_1D_linstep3(1,st:end),'YTicklabel',[])
+set(gca, 'XTick',diff_1D_linstep(1,st:end),'YTicklabel',[])
 xtickangle(45)
 xlabel('\bf{nx}', 'fontsize',FS)
 set(gca,'fontname','Courier')
@@ -56,14 +56,14 @@ text(85,ylab,'b)','fontsize',FS+2,'fontname','Courier')
 
 sp3 = subplot(133);
 st = 2;
-semilogx(diff_1D_nonlin3(1,st:end), diff_1D_nonlin3(2,st:end)./diff_1D_nonlin3(1,st:end)./diff_1D_nonlin3(3,st:end),'-o', ...
-         diff_2D_nonlin3(1,st:end), diff_2D_nonlin3(3,st:end)./diff_2D_nonlin3(1,st:end)./diff_2D_nonlin3(4,st:end),'-o', ...
-         diff_3D_nonlin3(1,1:end), diff_3D_nonlin3(4,1:end)./diff_3D_nonlin3(1,1:end)./diff_3D_nonlin3(5,1:end),'-o', ...
+semilogx(diff_1D_nonlin(1,st:end), diff_1D_nonlin(2,st:end)./diff_1D_nonlin(1,st:end)./diff_1D_nonlin(3,st:end),'-o', ...
+         diff_2D_nonlin(1,st:end), diff_2D_nonlin(3,st:end)./diff_2D_nonlin(1,st:end)./diff_2D_nonlin(4,st:end),'-o', ...
+         diff_3D_nonlin(1,1:end), diff_3D_nonlin(4,1:end)./diff_3D_nonlin(1,1:end)./diff_3D_nonlin(5,1:end),'-o', ...
          'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 lg=legend('1D', '2D', '3D'); set(lg,'box','off')
 title({'nonlinear'; 'diffusion'})
 ylim(mylim)
-set(gca, 'XTick',diff_1D_nonlin3(1,st:end),'YTicklabel',[])
+set(gca, 'XTick',diff_1D_nonlin(1,st:end),'YTicklabel',[])
 xtickangle(45)
 xlabel('\bf{nx}', 'fontsize',FS)
 set(gca,'fontname','Courier')
@@ -83,7 +83,7 @@ figure(1),clf,set(gcf,'color','white','pos',[1400 10 1000 950])
 sp1 = subplot(331);
 st = 2;
 semilogx(diff_1D_lin(1,st:end), diff_1D_lin(2,st:end)./diff_1D_lin(1,st:end),'-o', ...
-         diff_1D_lin3(1,st:end), diff_1D_lin3(2,st:end)./diff_1D_lin3(1,st:end),'-o', ...
+         diff_1D_lin(1,st:end), diff_1D_lin(2,st:end)./diff_1D_lin(1,st:end),'-o', ...
          'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 ylabel({'\bf{linear}';'diffusion';' ';'iter_{tot}/nx'}, 'fontsize',FS)
 set(gca, 'XTicklabel', [])
@@ -94,7 +94,7 @@ set(gca,'fontname','Courier')
 sp4 = subplot(334);
 st = 2;
 semilogx(diff_1D_linstep(1,st:end), diff_1D_linstep(2,st:end)./diff_1D_linstep(1,st:end),'-o', ...
-         diff_1D_linstep3(1,st:end), diff_1D_linstep3(2,st:end)./diff_1D_linstep3(1,st:end),'-o', ...
+         diff_1D_linstep(1,st:end), diff_1D_linstep(2,st:end)./diff_1D_linstep(1,st:end),'-o', ...
          'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 ylabel({'\bf{linear step}';'diffusion';' ';'iter_{tot}/nx'}, 'fontsize',FS)
 set(gca, 'XTicklabel', [])
@@ -104,7 +104,7 @@ set(gca,'fontname','Courier')
 sp7 = subplot(337);
 st = 2;
 semilogx(diff_1D_nonlin(1,st:end), diff_1D_nonlin(2,st:end)./diff_1D_nonlin(1,st:end),'-o', ...
-         diff_1D_nonlin3(1,st:end), diff_1D_nonlin3(2,st:end)./diff_1D_nonlin3(1,st:end),'-o', ...
+         diff_1D_nonlin(1,st:end), diff_1D_nonlin(2,st:end)./diff_1D_nonlin(1,st:end),'-o', ...
          'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 set(gca, 'XTick',diff_1D_nonlin(1,st:end))
 xtickangle(45)
@@ -117,7 +117,7 @@ set(gca,'fontname','Courier')
 sp2 = subplot(332);
 st = 2;
 semilogx(diff_2D_lin(1,st:end), diff_2D_lin(3,st:end)./diff_2D_lin(1,st:end),'-o', ...
-         diff_2D_lin3(1,st:end), diff_2D_lin3(3,st:end)./diff_2D_lin3(1,st:end),'-o', ...
+         diff_2D_lin(1,st:end), diff_2D_lin(3,st:end)./diff_2D_lin(1,st:end),'-o', ...
          'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 xlim([diff_2D_nonlin(1,st), diff_2D_nonlin(1,end)])
 title('2D')
@@ -128,7 +128,7 @@ set(gca,'fontname','Courier')
 sp5 = subplot(335);
 st = 2;
 semilogx(diff_2D_linstep(1,st:end), diff_2D_linstep(3,st:end)./diff_2D_linstep(1,st:end),'-o', ...
-         diff_2D_linstep3(1,st:end), diff_2D_linstep3(3,st:end)./diff_2D_linstep3(1,st:end),'-o', ...
+         diff_2D_linstep(1,st:end), diff_2D_linstep(3,st:end)./diff_2D_linstep(1,st:end),'-o', ...
          'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 xlim([diff_2D_nonlin(1,st), diff_2D_nonlin(1,end)])
 set(gca,'XTicklabel', [],'YTicklabel', [])
@@ -138,7 +138,7 @@ set(gca,'fontname','Courier')
 sp8 = subplot(338);
 st = 2;
 semilogx(diff_2D_nonlin(1,st:end), diff_2D_nonlin(3,st:end)./diff_2D_nonlin(1,st:end),'-o', ...
-         diff_2D_nonlin3(1,st:end), diff_2D_nonlin3(3,st:end)./diff_2D_nonlin3(1,st:end),'-o', ...
+         diff_2D_nonlin(1,st:end), diff_2D_nonlin(3,st:end)./diff_2D_nonlin(1,st:end),'-o', ...
          'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 xlim([diff_2D_nonlin(1,st), diff_2D_nonlin(1,end)])
 set(gca, 'XTick',diff_2D_nonlin(1,st:end),'YTicklabel',[])
@@ -151,7 +151,7 @@ set(gca,'fontname','Courier')
 sp3 = subplot(333);
 st = 1;
 semilogx(diff_3D_lin(1,st:end),  diff_3D_lin(4,st:end)./diff_3D_lin(1,st:end),'-o', ...
-         diff_3D_lin3(1,st:end), diff_3D_lin3(4,st:end)./diff_3D_lin3(1,st:end),'-o', ...
+         diff_3D_lin(1,st:end), diff_3D_lin(4,st:end)./diff_3D_lin(1,st:end),'-o', ...
          'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 set(gca, 'XTicklabel', [],'YTicklabel', [])
 title('3D')
@@ -162,7 +162,7 @@ set(gca,'fontname','Courier')
 sp6 = subplot(336);
 st = 1;
 semilogx(diff_3D_linstep(1,st:end),  diff_3D_linstep(4,st:end)./diff_3D_linstep(1,st:end),'-o', ...
-         diff_3D_linstep3(1,st:end), diff_3D_linstep3(4,st:end)./diff_3D_linstep3(1,st:end),'-o', ...
+         diff_3D_linstep(1,st:end), diff_3D_linstep(4,st:end)./diff_3D_linstep(1,st:end),'-o', ...
          'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 set(gca, 'XTicklabel', [],'YTicklabel', [])
 ylim([2 8])
@@ -171,7 +171,7 @@ set(gca,'fontname','Courier')
 sp9 = subplot(339);
 st = 1;
 semilogx(diff_3D_nonlin(1,st:end),  diff_3D_nonlin(4,st:end)./diff_3D_nonlin(1,st:end),'-o', ...
-         diff_3D_nonlin3(1,st:end), diff_3D_nonlin3(4,st:end)./diff_3D_nonlin3(1,st:end),'-o', ...
+         diff_3D_nonlin(1,st:end), diff_3D_nonlin(4,st:end)./diff_3D_nonlin(1,st:end),'-o', ...
          'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 set(gca, 'XTick', diff_3D_nonlin(1,st:end),'YTicklabel', [])
 xtickangle(45)

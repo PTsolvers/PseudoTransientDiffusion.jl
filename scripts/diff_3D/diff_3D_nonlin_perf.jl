@@ -119,17 +119,17 @@ end
     if do_viz
         !ispath("../../figures") && mkdir("../../figures")
         heatmap(xc, yc, Array(H)[:,:,Int(ceil(nz/2))]', dpi=150, aspect_ratio=1, framestyle=:box, xlims=(xc[1],xc[end]), ylims=(yc[1],yc[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0,1), title="nonlinear diffusion (nt=$it, iters=$ittot)")
-        savefig("../../figures/diff_3D_nonlin3_perf_$(nx).png")
+        savefig("../../figures/diff_3D_nonlin_perf_$(nx).png")
     end
     if do_save
         !ispath("../../output") && mkdir("../../output")
-        open("../../output/out_diff_3D_nonlin3_perf.txt","a") do io
+        open("../../output/out_diff_3D_nonlin_perf.txt","a") do io
             println(io, "1 $(nx) $(ny) $(nz) $(ittot) $(t_toc) $(A_eff) $(t_it) $(T_eff)")
         end
     end
     if do_save_viz
         !ispath("../../out_visu") && mkdir("../../out_visu")
-        matwrite("../../out_visu/diff_3D_nonlin3_perf.mat", Dict("H_3D"=> Array(H), "xc_3D"=> Array(xc), "yc_3D"=> Array(yc), "zc_3D"=> Array(zc)); compress = true)
+        matwrite("../../out_visu/diff_3D_nonlin_perf.mat", Dict("H_3D"=> Array(H), "xc_3D"=> Array(xc), "yc_3D"=> Array(yc), "zc_3D"=> Array(zc)); compress = true)
     end
     return
 end

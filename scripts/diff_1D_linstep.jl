@@ -94,13 +94,13 @@ end
     if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear step diffusion (nt=$it, iters=$ittot)")) end
     if do_save
         !ispath("../output") && mkdir("../output")
-        open("../output/out_diff_1D_linstep3.txt","a") do io
+        open("../output/out_diff_1D_linstep.txt","a") do io
             println(io, "$(nx) $(ittot) $(nt)")
         end
     end
     if do_save_viz
         !ispath("../out_visu") && mkdir("../out_visu")
-        matwrite("../out_visu/diff_1D_linstep3.mat", Dict("H_1D"=> Array(H), "xc_1D"=> Array(xc)); compress = true)
+        matwrite("../out_visu/diff_1D_linstep.mat", Dict("H_1D"=> Array(H), "xc_1D"=> Array(xc)); compress = true)
     end
     return
 end

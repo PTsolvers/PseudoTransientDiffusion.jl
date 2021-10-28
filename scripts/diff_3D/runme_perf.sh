@@ -16,7 +16,7 @@ RESOL2=512
 
 NP=( 1 2 4 8 )
 
-declare -a RUN=( "diff_3D_nonlin3_perf" "diff_3D_nonlin3_multixpu_perf" )
+declare -a RUN=( "diff_3D_nonlin_perf" "diff_3D_nonlin_multixpu_perf" )
 
 USE_GPU=true
 

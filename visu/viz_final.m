@@ -1,17 +1,17 @@
 clear
 
 data_1D = load('../out_visu/ini_1D.mat');           H0_1D = data_1D.H0_1D;
-data_1D = load('../out_visu/diff_1D_lin3.mat');     lin_1D = data_1D.H_1D; xc_1D = data_1D.xc_1D - data_1D.xc_1D(1);
-data_1D = load('../out_visu/diff_1D_linstep3.mat'); linstep_1D = data_1D.H_1D;
-data_1D = load('../out_visu/diff_1D_nonlin3.mat');  nonlin_1D = data_1D.H_1D;
+data_1D = load('../out_visu/diff_1D_lin.mat');     lin_1D = data_1D.H_1D; xc_1D = data_1D.xc_1D - data_1D.xc_1D(1);
+data_1D = load('../out_visu/diff_1D_linstep.mat'); linstep_1D = data_1D.H_1D;
+data_1D = load('../out_visu/diff_1D_nonlin.mat');  nonlin_1D = data_1D.H_1D;
 
-data_2D = load('../out_visu/diff_2D_lin3.mat');     lin_2D = data_2D.H_2D; xc_2D = data_2D.xc_2D - data_2D.xc_2D(1); yc_2D = data_2D.yc_2D  - data_2D.yc_2D(1);
-data_2D = load('../out_visu/diff_2D_linstep3.mat'); linstep_2D = data_2D.H_2D;
-data_2D = load('../out_visu/diff_2D_nonlin3.mat');  nonlin_2D = data_2D.H_2D;
+data_2D = load('../out_visu/diff_2D_lin.mat');     lin_2D = data_2D.H_2D; xc_2D = data_2D.xc_2D - data_2D.xc_2D(1); yc_2D = data_2D.yc_2D  - data_2D.yc_2D(1);
+data_2D = load('../out_visu/diff_2D_linstep.mat'); linstep_2D = data_2D.H_2D;
+data_2D = load('../out_visu/diff_2D_nonlin.mat');  nonlin_2D = data_2D.H_2D;
 
-data_3D = load('../out_visu/diff_3D_lin3.mat');     lin_3D = data_3D.H_3D;
-data_3D = load('../out_visu/diff_3D_linstep3.mat'); linstep_3D = data_3D.H_3D;
-data_3D = load('../out_visu/diff_3D_nonlin3.mat');  nonlin_3D = data_3D.H_3D;
+data_3D = load('../out_visu/diff_3D_lin.mat');     lin_3D = data_3D.H_3D;
+data_3D = load('../out_visu/diff_3D_linstep.mat'); linstep_3D = data_3D.H_3D;
+data_3D = load('../out_visu/diff_3D_nonlin.mat');  nonlin_3D = data_3D.H_3D;
 % dx = data_3D.dx_3D; xc_3D = dx+dx/2:dx:size(H0_3D,1)*dx-dx-dx/2;
 % dy = data_3D.dy_3D; yc_3D = dy+dy/2:dy:size(H0_3D,2)*dy-dy-dy/2;
 % dz = data_3D.dz_3D; zc_3D = dz+dz/2:dz:size(H0_3D,3)*dz-dz-dz/2;
