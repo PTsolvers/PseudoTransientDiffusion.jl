@@ -13,14 +13,14 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_flux!(qHx, qHx2, H, D, θr_dt, dx)
-    @all(qHx)  = (@all(qHx) * θr_dt - D * @d(H) / dx) / (1.0 + θr_dt)
+@parallel function compute_flux!(qHx, qHx2, H, D, θr_dτ, dx)
+    @all(qHx)  = (@all(qHx) * θr_dτ - D * @d(H) / dx) / (1.0 + θr_dτ)
     @all(qHx2) = -D * @d(H) / dx
     return
 end
 
-@parallel function compute_update!(H, Hold, qHx, dt_ρ, dt, dx)
-    @inn(H) = (@inn(H) +  dt_ρ * (@inn(Hold) / dt - @d(qHx) / dx)) / (1.0 + dt_ρ / dt)
+@parallel function compute_update!(H, Hold, qHx, dτ_ρ, dt, dx)
+    @inn(H) = (@inn(H) +  dτ_ρ * (@inn(Hold) / dt - @d(qHx) / dx)) / (1.0 + dτ_ρ / dt)
     return
 end
 
@@ -43,10 +43,10 @@ end
     CFL    = 1.0        # CFL number
     # Derived numerics
     dx     = lx / nx      # grid size
-    Vpdt   = CFL * dx
+    Vpdτ   = CFL * dx
     Re     = π + sqrt(π^2 + (lx^2 / D / dt)) # Numerical Reynolds number
-    θr_dt  = lx / Vpdt / Re
-    dt_ρ   = Vpdt * lx / D / Re
+    θr_dτ  = lx / Vpdτ / Re
+    dτ_ρ   = Vpdτ * lx / D / Re
     xc     = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
@@ -63,8 +63,8 @@ end
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err > tol && iter < itMax
-            @parallel compute_flux!(qHx, qHx2, H, D, θr_dt, dx)
-            @parallel compute_update!(H, Hold, qHx, dt_ρ, dt, dx)
+            @parallel compute_flux!(qHx, qHx2, H, D, θr_dτ, dx)
+            @parallel compute_update!(H, Hold, qHx, dτ_ρ, dt, dx)
             iter += 1
             if iter % nout == 0
                 @parallel check_res!(ResH, H, Hold, qHx2, dt, dx)

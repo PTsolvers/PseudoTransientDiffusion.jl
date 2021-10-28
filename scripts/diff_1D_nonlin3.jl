@@ -17,17 +17,17 @@ macro innH3()    esc(:( @inn(H) * @inn(H) * @inn(H)          )) end
 macro avH3()     esc(:( @av(H) * @av(H) * @av(H)             )) end
 macro avRe()     esc(:( π + sqrt(π^2 + lx^2 / @avH3() / dt)  )) end
 macro Re()       esc(:( π + sqrt(π^2 + lx^2 / @innH3() / dt) )) end
-macro θr_dt()    esc(:( lx / Vpdt / @avRe()                  )) end
-macro dt_ρ()     esc(:( Vpdt * lx / @innH3() / @Re()         )) end
+macro θr_dτ()    esc(:( lx / Vpdτ / @avRe()                  )) end
+macro dτ_ρ()     esc(:( Vpdτ * lx / @innH3() / @Re()         )) end
 
-@parallel function compute_flux!(qHx, qHx2, H, Vpdt, dt, lx, dx)
-    @all(qHx)  = (@all(qHx) * @θr_dt() - @avH3() * @d(H) / dx) / (1.0 + @θr_dt())
+@parallel function compute_flux!(qHx, qHx2, H, Vpdτ, dt, lx, dx)
+    @all(qHx)  = (@all(qHx) * @θr_dτ() - @avH3() * @d(H) / dx) / (1.0 + @θr_dτ())
     @all(qHx2) = -@avH3() * @d(H) / dx
     return
 end
 
-@parallel function compute_update!(H, Hold, qHx, Vpdt, dt, lx, dx)
-    @inn(H) = (@inn(H) +  @dt_ρ() * (@inn(Hold) / dt - @d(qHx) / dx)) / (1.0 + @dt_ρ() / dt)
+@parallel function compute_update!(H, Hold, qHx, Vpdτ, dt, lx, dx)
+    @inn(H) = (@inn(H) +  @dτ_ρ() * (@inn(Hold) / dt - @d(qHx) / dx)) / (1.0 + @dτ_ρ() / dt)
     return
 end
 
@@ -49,7 +49,7 @@ end
     CFL    = 1.0        # CFL number
     # Derived numerics
     dx     = lx / nx      # grid size
-    Vpdt   = CFL * dx
+    Vpdτ   = CFL * dx
     xc     = LinRange(dx / 2, lx - dx / 2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
@@ -65,8 +65,8 @@ end
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err > tol && iter < itMax
-            @parallel compute_flux!(qHx, qHx2, H, Vpdt, dt, lx, dx)
-            @parallel compute_update!(H, Hold, qHx, Vpdt, dt, lx, dx)
+            @parallel compute_flux!(qHx, qHx2, H, Vpdτ, dt, lx, dx)
+            @parallel compute_update!(H, Hold, qHx, Vpdτ, dt, lx, dx)
             iter += 1
             if iter % nout == 0
                 @parallel check_res!(ResH, H, Hold, qHx2, dt, dx)

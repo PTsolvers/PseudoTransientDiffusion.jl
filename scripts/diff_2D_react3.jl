@@ -43,9 +43,9 @@ end
     Da      = π + sqrt(π^2 + (lx^2 / D / θkin)) # Numerical Reynolds number
     # Derived numerics
     dx, dy  = lx / nx, ly / ny  # grid size    
-    Vpdt    = CFL * min(dx, dy)
-    θr_θkin = max(lx, ly) / Vpdt / Da
-    θkin_ρ  = Vpdt * max(lx, ly) / D / Da
+    Vpdτ    = CFL * min(dx, dy)
+    θr_θkin = max(lx, ly) / Vpdτ / Da
+    θkin_ρ  = Vpdτ * max(lx, ly) / D / Da
     xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
     # Array allocation
     qHx     = @zeros(nx - 1,ny - 2)

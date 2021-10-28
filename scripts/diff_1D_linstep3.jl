@@ -13,19 +13,19 @@ else
 end
 using Plots, Printf, LinearAlgebra, MAT
 
-@parallel function compute_iter_params!(dt_ρ, D, Re, Vpdt, lx)
-    @all(dt_ρ) = Vpdt * lx / @maxloc(D) / Re
+@parallel function compute_iter_params!(dτ_ρ, D, Re, Vpdτ, lx)
+    @all(dτ_ρ) = Vpdτ * lx / @maxloc(D) / Re
     return
 end
 
-@parallel function compute_flux!(qHx, qHx2, H, D, θr_dt, dx)
-    @all(qHx)  = (@all(qHx) * θr_dt - @av(D) * @d(H) / dx) / (1.0 + θr_dt)
+@parallel function compute_flux!(qHx, qHx2, H, D, θr_dτ, dx)
+    @all(qHx)  = (@all(qHx) * θr_dτ - @av(D) * @d(H) / dx) / (1.0 + θr_dτ)
     @all(qHx2) = -@av(D) * @d(H) / dx
     return
 end
 
-@parallel function compute_update!(H, Hold, qHx, dt_ρ, dt, dx)
-    @inn(H) = (@inn(H) +  @all(dt_ρ) * (@inn(Hold) / dt - @d(qHx) / dx)) / (1.0 + @all(dt_ρ) / dt)
+@parallel function compute_update!(H, Hold, qHx, dτ_ρ, dt, dx)
+    @inn(H) = (@inn(H) +  @all(dτ_ρ) * (@inn(Hold) / dt - @d(qHx) / dx)) / (1.0 + @all(dτ_ρ) / dt)
     return
 end
 
@@ -55,30 +55,30 @@ end
     CFL    = 1.0        # CFL number
     # Derived numerics
     dx     = lx / nx      # grid size
-    Vpdt   = CFL * dx
+    Vpdτ   = CFL * dx
     Re     = π + sqrt(π^2 + (lx^2 / max(D1,D2)) / dt)
-    θr_dt  = lx / Vpdt / Re
+    θr_dτ  = lx / Vpdτ / Re
     xc     = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
     qHx2   = @zeros(nx-1)
     ResH   = @zeros(nx-2)
-    dt_ρ   = @zeros(nx-2)
+    dτ_ρ   = @zeros(nx-2)
     # Initial condition
     D      = D1 * @ones(nx)
     D[1:Int(ceil(nx / 2.2))] .= D2
     H0     = Data.Array(exp.(-xc.^2))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
-    @parallel compute_iter_params!(dt_ρ, D, Re, Vpdt, lx)
+    @parallel compute_iter_params!(dτ_ρ, D, Re, Vpdτ, lx)
     t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))
     # Physical time loop
     while it < nt
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err > tol && iter < itMax
-            @parallel compute_flux!(qHx, qHx2, H, D, θr_dt, dx)
-            @parallel compute_update!(H, Hold, qHx, dt_ρ, dt, dx)
+            @parallel compute_flux!(qHx, qHx2, H, D, θr_dτ, dx)
+            @parallel compute_update!(H, Hold, qHx, dτ_ρ, dt, dx)
             iter += 1
             if iter % nout == 0
                 @parallel check_res!(ResH, H, Hold, qHx2, dt, dx)

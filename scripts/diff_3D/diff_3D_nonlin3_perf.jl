@@ -23,20 +23,20 @@ macro av_xi_Re(ix,iy,iz)    esc(:( π + sqrt(π*π + max_lxyz2 / @av_xi_H3($ix,$
 macro av_yi_Re(ix,iy,iz)    esc(:( π + sqrt(π*π + max_lxyz2 / @av_yi_H3($ix,$iy,$iz) * _dt) )) end
 macro av_zi_Re(ix,iy,iz)    esc(:( π + sqrt(π*π + max_lxyz2 / @av_zi_H3($ix,$iy,$iz) * _dt) )) end
 macro Re(ix,iy,iz)          esc(:( π + sqrt(π*π + max_lxyz2 / @innH3($ix,$iy,$iz)    * _dt) )) end
-macro av_xi_θr_dt(ix,iy,iz) esc(:( max_lxyz / Vpdt / @av_xi_Re($ix,$iy,$iz) * Resc )) end
-macro av_yi_θr_dt(ix,iy,iz) esc(:( max_lxyz / Vpdt / @av_yi_Re($ix,$iy,$iz) * Resc )) end
-macro av_zi_θr_dt(ix,iy,iz) esc(:( max_lxyz / Vpdt / @av_zi_Re($ix,$iy,$iz) * Resc )) end
-macro dt_ρ(ix,iy,iz)        esc(:( Vpdt * max_lxyz / @innH3($ix,$iy,$iz) / @Re($ix,$iy,$iz) * Resc )) end
+macro av_xi_θr_dτ(ix,iy,iz) esc(:( max_lxyz / Vpdτ / @av_xi_Re($ix,$iy,$iz) * Resc )) end
+macro av_yi_θr_dτ(ix,iy,iz) esc(:( max_lxyz / Vpdτ / @av_yi_Re($ix,$iy,$iz) * Resc )) end
+macro av_zi_θr_dτ(ix,iy,iz) esc(:( max_lxyz / Vpdτ / @av_zi_Re($ix,$iy,$iz) * Resc )) end
+macro dτ_ρ(ix,iy,iz)        esc(:( Vpdτ * max_lxyz / @innH3($ix,$iy,$iz) / @Re($ix,$iy,$iz) * Resc )) end
 
-@parallel_indices (ix,iy,iz) function compute_flux!(qHx, qHy, qHz, H, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz)
-    if (ix<=size(qHx,1) && iy<=size(qHx,2) && iz<=size(qHx,3)) qHx[ix,iy,iz]  = (qHx[ix,iy,iz] * @av_xi_θr_dt(ix,iy,iz) - @av_xi_H3(ix,iy,iz) * _dx * (H[ix+1,iy+1,iz+1] - H[ix,iy+1,iz+1]) ) / (1.0 + @av_xi_θr_dt(ix,iy,iz))  end
-    if (ix<=size(qHy,1) && iy<=size(qHy,2) && iz<=size(qHy,3)) qHy[ix,iy,iz]  = (qHy[ix,iy,iz] * @av_yi_θr_dt(ix,iy,iz) - @av_yi_H3(ix,iy,iz) * _dy * (H[ix+1,iy+1,iz+1] - H[ix+1,iy,iz+1]) ) / (1.0 + @av_yi_θr_dt(ix,iy,iz))  end
-    if (ix<=size(qHz,1) && iy<=size(qHz,2) && iz<=size(qHz,3)) qHz[ix,iy,iz]  = (qHz[ix,iy,iz] * @av_zi_θr_dt(ix,iy,iz) - @av_zi_H3(ix,iy,iz) * _dz * (H[ix+1,iy+1,iz+1] - H[ix+1,iy+1,iz]) ) / (1.0 + @av_zi_θr_dt(ix,iy,iz))  end
+@parallel_indices (ix,iy,iz) function compute_flux!(qHx, qHy, qHz, H, Vpdτ, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz)
+    if (ix<=size(qHx,1) && iy<=size(qHx,2) && iz<=size(qHx,3)) qHx[ix,iy,iz]  = (qHx[ix,iy,iz] * @av_xi_θr_dτ(ix,iy,iz) - @av_xi_H3(ix,iy,iz) * _dx * (H[ix+1,iy+1,iz+1] - H[ix,iy+1,iz+1]) ) / (1.0 + @av_xi_θr_dτ(ix,iy,iz))  end
+    if (ix<=size(qHy,1) && iy<=size(qHy,2) && iz<=size(qHy,3)) qHy[ix,iy,iz]  = (qHy[ix,iy,iz] * @av_yi_θr_dτ(ix,iy,iz) - @av_yi_H3(ix,iy,iz) * _dy * (H[ix+1,iy+1,iz+1] - H[ix+1,iy,iz+1]) ) / (1.0 + @av_yi_θr_dτ(ix,iy,iz))  end
+    if (ix<=size(qHz,1) && iy<=size(qHz,2) && iz<=size(qHz,3)) qHz[ix,iy,iz]  = (qHz[ix,iy,iz] * @av_zi_θr_dτ(ix,iy,iz) - @av_zi_H3(ix,iy,iz) * _dz * (H[ix+1,iy+1,iz+1] - H[ix+1,iy+1,iz]) ) / (1.0 + @av_zi_θr_dτ(ix,iy,iz))  end
     return
 end
 
-@parallel_indices (ix,iy,iz) function compute_update!(H, Hold, qHx, qHy, qHz, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz, size_innH_1, size_innH_2, size_innH_3)
-    if (ix<=size_innH_1 && iy<=size_innH_2 && iz<=size_innH_3)  H[ix+1,iy+1,iz+1] = (H[ix+1,iy+1,iz+1] + @dt_ρ(ix,iy,iz) * (_dt * Hold[ix+1,iy+1,iz+1] - (_dx * (qHx[ix+1,iy,iz] - qHx[ix,iy,iz]) + _dy * (qHy[ix,iy+1,iz] - qHy[ix,iy,iz])  + _dz * (qHz[ix,iy,iz+1] - qHz[ix,iy,iz])) )) / (1.0 + _dt * @dt_ρ(ix,iy,iz))  end
+@parallel_indices (ix,iy,iz) function compute_update!(H, Hold, qHx, qHy, qHz, Vpdτ, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz, size_innH_1, size_innH_2, size_innH_3)
+    if (ix<=size_innH_1 && iy<=size_innH_2 && iz<=size_innH_3)  H[ix+1,iy+1,iz+1] = (H[ix+1,iy+1,iz+1] + @dτ_ρ(ix,iy,iz) * (_dt * Hold[ix+1,iy+1,iz+1] - (_dx * (qHx[ix+1,iy,iz] - qHx[ix,iy,iz]) + _dy * (qHy[ix,iy+1,iz] - qHy[ix,iy,iz])  + _dz * (qHz[ix,iy,iz+1] - qHz[ix,iy,iz])) )) / (1.0 + _dt * @dτ_ρ(ix,iy,iz))  end
     return
 end
 
@@ -70,7 +70,7 @@ end
     Resc       = 1 / 1.2          # iteration parameter scaling
     # Derived numerics    
     dx, dy, dz = lx/nx, ly/ny, lz/nz # cell sizes
-    Vpdt       = CFL * min(dx, dy, dz)
+    Vpdτ       = CFL * min(dx, dy, dz)
     max_lxyz   = max(lx, ly, lz)
     max_lxyz2  = max_lxyz^2
     xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
@@ -96,8 +96,8 @@ end
         # Pseudo-transient iteration
         while err>tol && iter<itMax
             if (it==1 && iter==0) t_tic = Base.time(); niter = 0 end
-            @parallel compute_flux!(qHx, qHy, qHz, H, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz)
-            @parallel compute_update!(H, Hold, qHx, qHy, qHz, Vpdt, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz, size_innH_1, size_innH_2, size_innH_3)
+            @parallel compute_flux!(qHx, qHy, qHz, H, Vpdτ, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz)
+            @parallel compute_update!(H, Hold, qHx, qHy, qHz, Vpdτ, Resc, _dt, max_lxyz, max_lxyz2, _dx, _dy, _dz, size_innH_1, size_innH_2, size_innH_3)
             iter += 1;  niter += 1
             if iter % nout == 0
                 @parallel compute_flux_res!(qHx2, qHy2, qHz2, H, _dx, _dy, _dz)

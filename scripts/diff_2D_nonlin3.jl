@@ -20,20 +20,20 @@ macro av_yi_H3()    esc(:( @av_yi(H) * @av_yi(H) * @av_yi(H)       )) end
 macro av_xi_Re()    esc(:( π + sqrt(π*π + max_lxy2 / @av_xi_H3() / dt) )) end
 macro av_yi_Re()    esc(:( π + sqrt(π*π + max_lxy2 / @av_yi_H3() / dt) )) end
 macro Re()          esc(:( π + sqrt(π*π + max_lxy2 / @innH3()    / dt) )) end
-macro av_xi_θr_dt() esc(:( max_lxy / Vpdt / @av_xi_Re() * Resc      )) end
-macro av_yi_θr_dt() esc(:( max_lxy / Vpdt / @av_yi_Re() * Resc      )) end
-macro dt_ρ()        esc(:( Vpdt * max_lxy / @innH3() / @Re() * Resc )) end
+macro av_xi_θr_dτ() esc(:( max_lxy / Vpdτ / @av_xi_Re() * Resc      )) end
+macro av_yi_θr_dτ() esc(:( max_lxy / Vpdτ / @av_yi_Re() * Resc      )) end
+macro dτ_ρ()        esc(:( Vpdτ * max_lxy / @innH3() / @Re() * Resc )) end
 
-@parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, Vpdt, Resc, dt, max_lxy, max_lxy2, dx, dy)
-    @all(qHx)  = (@all(qHx) * @av_xi_θr_dt() - @av_xi_H3() * @d_xi(H) / dx) / (1.0 + @av_xi_θr_dt())
-    @all(qHy)  = (@all(qHy) * @av_yi_θr_dt() - @av_yi_H3() * @d_yi(H) / dy) / (1.0 + @av_yi_θr_dt())
+@parallel function compute_flux!(qHx, qHy, qHx2, qHy2, H, Vpdτ, Resc, dt, max_lxy, max_lxy2, dx, dy)
+    @all(qHx)  = (@all(qHx) * @av_xi_θr_dτ() - @av_xi_H3() * @d_xi(H) / dx) / (1.0 + @av_xi_θr_dτ())
+    @all(qHy)  = (@all(qHy) * @av_yi_θr_dτ() - @av_yi_H3() * @d_yi(H) / dy) / (1.0 + @av_yi_θr_dτ())
     @all(qHx2) = -@av_xi_H3() * @d_xi(H) / dx
     @all(qHy2) = -@av_yi_H3() * @d_yi(H) / dy
     return
 end
 
-@parallel function compute_update!(H, Hold, qHx, qHy, Vpdt, Resc, dt, max_lxy, max_lxy2, dx, dy)
-    @inn(H) = (@inn(H) +  @dt_ρ() * (@inn(Hold) / dt - (@d_xa(qHx) / dx + @d_ya(qHy) / dy))) / (1.0 + @dt_ρ() / dt)
+@parallel function compute_update!(H, Hold, qHx, qHy, Vpdτ, Resc, dt, max_lxy, max_lxy2, dx, dy)
+    @inn(H) = (@inn(H) +  @dτ_ρ() * (@inn(Hold) / dt - (@d_xa(qHx) / dx + @d_ya(qHy) / dy))) / (1.0 + @dτ_ρ() / dt)
     return
 end
 
@@ -56,7 +56,7 @@ end
     Resc    = 1 / 1.2       # iteration parameter scaling
     # Derived numerics
     dx, dy  = lx / nx, ly / ny  # grid size   
-    Vpdt    = CFL * min(dx, dy)
+    Vpdτ    = CFL * min(dx, dy)
     max_lxy = max(lx, ly)
     max_lxy2= max_lxy^2
     xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
@@ -76,8 +76,8 @@ end
         iter = 0; err = 2 * tol
         # Pseudo-transient iteration
         while err > tol && iter < itMax
-            @parallel compute_flux!(qHx, qHy, qHx2, qHy2, H, Vpdt, Resc, dt, max_lxy, max_lxy2, dx, dy)
-            @parallel compute_update!(H, Hold, qHx, qHy, Vpdt, Resc, dt, max_lxy, max_lxy2, dx, dy)
+            @parallel compute_flux!(qHx, qHy, qHx2, qHy2, H, Vpdτ, Resc, dt, max_lxy, max_lxy2, dx, dy)
+            @parallel compute_update!(H, Hold, qHx, qHy, Vpdτ, Resc, dt, max_lxy, max_lxy2, dx, dy)
             iter += 1
             if iter % nout == 0
                 @parallel check_res!(ResH, H, Hold, qHx2, qHy2, dt, dx, dy)

@@ -28,23 +28,23 @@ macro av_xi_Re()    esc(:( π + sqrt(π*π + max_lxyz2 / @av_xi_H3() / dt) )) en
 macro av_yi_Re()    esc(:( π + sqrt(π*π + max_lxyz2 / @av_yi_H3() / dt) )) end
 macro av_zi_Re()    esc(:( π + sqrt(π*π + max_lxyz2 / @av_zi_H3() / dt) )) end
 macro Re()          esc(:( π + sqrt(π*π + max_lxyz2 / @innH3()    / dt) )) end
-macro av_xi_θr_dt() esc(:( max_lxyz / Vpdt / @av_xi_Re() * Resc )) end
-macro av_yi_θr_dt() esc(:( max_lxyz / Vpdt / @av_yi_Re() * Resc )) end
-macro av_zi_θr_dt() esc(:( max_lxyz / Vpdt / @av_zi_Re() * Resc )) end
-macro dt_ρ()        esc(:( Vpdt * max_lxyz / @innH3() / @Re() * Resc )) end
+macro av_xi_θr_dτ() esc(:( max_lxyz / Vpdτ / @av_xi_Re() * Resc )) end
+macro av_yi_θr_dτ() esc(:( max_lxyz / Vpdτ / @av_yi_Re() * Resc )) end
+macro av_zi_θr_dτ() esc(:( max_lxyz / Vpdτ / @av_zi_Re() * Resc )) end
+macro dτ_ρ()        esc(:( Vpdτ * max_lxyz / @innH3() / @Re() * Resc )) end
 
-@parallel function compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, Vpdt, Resc, dt, max_lxyz, max_lxyz2, dx, dy, dz)
-    @all(qHx)  = (@all(qHx) * @av_xi_θr_dt() - @av_xi_H3() * @d_xi(H) / dx) / (1.0 + @av_xi_θr_dt())
-    @all(qHy)  = (@all(qHy) * @av_yi_θr_dt() - @av_yi_H3() * @d_yi(H) / dy) / (1.0 + @av_yi_θr_dt())
-    @all(qHz)  = (@all(qHz) * @av_zi_θr_dt() - @av_zi_H3() * @d_zi(H) / dz) / (1.0 + @av_zi_θr_dt())
+@parallel function compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, Vpdτ, Resc, dt, max_lxyz, max_lxyz2, dx, dy, dz)
+    @all(qHx)  = (@all(qHx) * @av_xi_θr_dτ() - @av_xi_H3() * @d_xi(H) / dx) / (1.0 + @av_xi_θr_dτ())
+    @all(qHy)  = (@all(qHy) * @av_yi_θr_dτ() - @av_yi_H3() * @d_yi(H) / dy) / (1.0 + @av_yi_θr_dτ())
+    @all(qHz)  = (@all(qHz) * @av_zi_θr_dτ() - @av_zi_H3() * @d_zi(H) / dz) / (1.0 + @av_zi_θr_dτ())
     @all(qHx2) = -@av_xi_H3() * @d_xi(H) / dx
     @all(qHy2) = -@av_yi_H3() * @d_yi(H) / dy
     @all(qHz2) = -@av_zi_H3() * @d_zi(H) / dz
     return
 end
 
-@parallel function compute_update!(H, Hold, qHx, qHy, qHz, Vpdt, Resc, dt, max_lxyz, max_lxyz2, dx, dy, dz)
-    @inn(H) = (@inn(H) +  @dt_ρ() * (@inn(Hold) / dt - (@d_xa(qHx) / dx + @d_ya(qHy) / dy + @d_za(qHz) / dz))) / (1.0 + @dt_ρ() / dt)
+@parallel function compute_update!(H, Hold, qHx, qHy, qHz, Vpdτ, Resc, dt, max_lxyz, max_lxyz2, dx, dy, dz)
+    @inn(H) = (@inn(H) +  @dτ_ρ() * (@inn(Hold) / dt - (@d_xa(qHx) / dx + @d_ya(qHy) / dy + @d_za(qHz) / dz))) / (1.0 + @dτ_ρ() / dt)
     return
 end
 
@@ -69,7 +69,7 @@ end
     b_width    = (8, 4, 4)       # boundary width for comm/comp overlap
     # Derived numerics    
     dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g() # cell sizes
-    Vpdt       = CFL * min(dx, dy, dz)
+    Vpdτ       = CFL * min(dx, dy, dz)
     max_lxyz   = max(lx, ly, lz)
     max_lxyz2  = max_lxyz^2
     xc, yc, zc = LinRange(dx/2, lx-dx/2, nx), LinRange(dy/2, ly-dy/2, ny), LinRange(dz/2, lz-dz/2, nz)
@@ -102,9 +102,9 @@ end
         iter = 0; err = 2*tol
         # Pseudo-transient iteration
         while err>tol && iter<itMax
-            @parallel compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, Vpdt, Resc, dt, max_lxyz, max_lxyz2, dx, dy, dz)
+            @parallel compute_flux!(qHx, qHy, qHz, qHx2, qHy2, qHz2, H, Vpdτ, Resc, dt, max_lxyz, max_lxyz2, dx, dy, dz)
             @hide_communication b_width begin # communication/computation overlap
-                @parallel compute_update!(H, Hold, qHx, qHy, qHz, Vpdt, Resc, dt, max_lxyz, max_lxyz2, dx, dy, dz)
+                @parallel compute_update!(H, Hold, qHx, qHy, qHz, Vpdτ, Resc, dt, max_lxyz, max_lxyz2, dx, dy, dz)
                 update_halo!(H)
             end
             iter += 1

@@ -40,9 +40,9 @@ end
     Da      = π + sqrt(π^2 + (lx^2 / D / θkin)) # Numerical Reynolds number
     # Derived numerics
     dx      = lx / nx      # grid size
-    Vpdt    = CFL * dx
-    θr_θkin = lx / Vpdt / Da
-    θkin_ρ  = Vpdt * lx / D / Da
+    Vpdτ    = CFL * dx
+    θr_θkin = lx / Vpdτ / Da
+    θkin_ρ  = Vpdτ * lx / D / Da
     xc      = LinRange(-lx / 2, lx / 2, nx)
     # Array allocation
     qHx     = @zeros(nx - 1)
