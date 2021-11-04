@@ -26,7 +26,7 @@ dH/dt = -∇ ⋅ qH
 ## Scripts
 
 ### Optimal iteration parameters
-The folder [**dispersion_analysis**](#dispersion-analysis) contains the analytical derivations for the values of iteration parameters. We provide these derivations for 1D stationary and transient diffusion problems. Only the case of `D=const` is considered.
+The folder [**dispersion_analysis**](dispersion-analysis) contains the analytical derivations for the values of iteration parameters. We provide these derivations for 1D stationary and transient diffusion problems. Only the case of `D=const` is considered.
 
 The main output of the script is the theoretically predicted value for the non-dimensional parameter `Re`, which is used in the diffusion solvers. The figure showing the dependency of the residual decay rate on `Re` is also displayed:
 
