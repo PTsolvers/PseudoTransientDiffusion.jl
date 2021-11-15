@@ -25,7 +25,7 @@ end
 end
 
 @parallel function check_res!(ResH, H, Hold, qHx2, dt, dx)
-    @inn(ResH) = -(@inn(H) - @inn(Hold)) / dt - @d(qHx2) / dx
+    @all(ResH) = -(@inn(H) - @inn(Hold)) / dt - @d(qHx2) / dx
     return
 end
 

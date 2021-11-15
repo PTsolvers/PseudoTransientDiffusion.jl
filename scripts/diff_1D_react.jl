@@ -22,7 +22,7 @@ end
 end
 
 @parallel function check_res!(ResH, H, Heq, qHx2, θkin, dx)
-    @inn(ResH) = -(@inn(H) - @inn(Heq)) / θkin - @d(qHx2) / dx
+    @all(ResH) = -(@inn(H) - @inn(Heq)) / θkin - @d(qHx2) / dx
     return
 end
 
