@@ -1,9 +1,8 @@
-using Plots, Printf, LinearAlgebra, MAT
+using Plots, Printf, LinearAlgebra
 
 @views av(A) = 0.5 .* (A[1:end-1] .+ A[2:end])
 
-@views function diffusion_1D(; do_viz=true)
-    implicit = false
+@views function diffusion_1D(; implicit=false, do_viz=true)
     # Physics
     lx     = 10.0       # domain size
     ttot   = 1.0        # total simulation time
