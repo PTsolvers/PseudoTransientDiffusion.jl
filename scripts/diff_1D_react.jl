@@ -36,7 +36,7 @@ end
     tol     = 1e-8       # tolerance
     itMax   = 1e5        # max number of iterations
     nout    = 10         # tol check
-    CFL     = 1.0        # CFL number
+    CFL     = 0.99       # CFL number
     Da      = π + sqrt(π^2 + (lx^2 / D / θkin)) # Numerical Reynolds number
     # Derived numerics
     dx      = lx / nx      # grid size
@@ -61,7 +61,7 @@ end
         iter += 1
         if iter % nout == 0
             @parallel check_res!(ResH, H, Heq, qHx2, θkin, dx)
-            err = norm(ResH) / length(ResH)
+            err = norm(ResH) / sqrt(length(ResH))
         end
     end
     if isnan(err) error("NaN") end

@@ -70,7 +70,7 @@ end
             iter += 1
             if iter % nout == 0
                 @parallel check_res!(ResH, H, Hold, qHx2, dt, dx)
-                err = norm(ResH) / length(ResH)
+                err = norm(ResH) / sqrt(length(ResH))
             end
         end
         ittot += iter; it += 1; t += dt

@@ -95,7 +95,7 @@ end
             if iter % nout == 0
                 @parallel compute_flux_res!(qHx2, qHy2, H, _dx, _dy)
                 @parallel check_res!(ResH, H, Hold, qHx2, qHy2, _dt, _dx, _dy)
-                err = norm(ResH) / length(ResH)
+                err = norm(ResH) / sqrt(length(ResH))
                 if isnan(err) error("NaN") end
             end
         end

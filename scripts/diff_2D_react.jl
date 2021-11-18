@@ -66,7 +66,7 @@ end
         iter += 1
         if iter % nout == 0
             @parallel check_res!(ResH, H, Heq, qHx2, qHy2, θkin, dx, dy)
-            err = norm(ResH) / length(ResH)
+            err = norm(ResH) / sqrt(length(ResH))
         end
     end
     if isnan(err) error("NaN") end

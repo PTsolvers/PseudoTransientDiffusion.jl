@@ -55,7 +55,7 @@ using Plots, Printf, LinearAlgebra
             if iter % nout == 0
                 qHx2 .= .-av(D) .* diff(H) ./ dx
                 ResH .= .-(H[2:end-1] .- Hold[2:end-1]) ./ dt .- diff(qHx2) ./ dx
-                err = norm(ResH) / length(ResH)
+                err = norm(ResH) / sqrt(length(ResH))
             end
         end
         # Update H
