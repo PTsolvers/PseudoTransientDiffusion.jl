@@ -34,9 +34,9 @@ diff_3D_mxpu_octo_2  = average_exp(diff_3D_mxpu_octo, nrep, my_type);
 diff_3D_mxpu_volta_2 = average_exp(diff_3D_mxpu_volta, nrep, my_type);
 diff_3D_mxpu_daint_2 = average_exp(diff_3D_mxpu_daint, nrep1, my_type);
 
-stokes_3D_octo_2  = average_exp(stokes_3D_octo, nrep, my_type);
-stokes_3D_volta_2 = average_exp(stokes_3D_volta, nrep, my_type);
-stokes_3D_daint_2 = average_exp(stokes_3D_daint, nrep1, my_type);
+% stokes_3D_octo_2  = average_exp(stokes_3D_octo, nrep, my_type);
+% stokes_3D_volta_2 = average_exp(stokes_3D_volta, nrep, my_type);
+% stokes_3D_daint_2 = average_exp(stokes_3D_daint, nrep1, my_type);
 stokes_3D_mxpu_octo_2  = average_exp(stokes_3D_mxpu_octo, nrep, my_type);
 stokes_3D_mxpu_volta_2 = average_exp(stokes_3D_mxpu_volta, nrep, my_type);
 stokes_3D_mxpu_daint_2 = average_exp(stokes_3D_mxpu_daint, nrep1, my_type);
@@ -45,15 +45,21 @@ T_peak_volta = 840;
 T_peak_octo  = 254;
 T_peak_daint = 561;
 
+% no hide_comm perfs
+single_daint_diff   = 315.6;
+single_daint_stokes = 210.2;
+single_volta_diff   = 481.1;
+single_volta_stokes = 334.1;
+
 FS = 20;
 mylim = [0 870];
 ylab = 790;
 
-mylim2 = [0.88 1.01];
-mylimx = [0.9 2e3];
-ylab2 = 0.895;
+mylim2 = [0.959 1.003];
+mylimx = [0.8 3.e3];
+ylab2 = 0.963;
 
-fig1 = 1;
+fig1 = 0;
 fig2 = 1;
 
 %%
@@ -106,8 +112,8 @@ if fig2==1
 figure(2),clf,set(gcf,'color','white','pos',[1400 10 800 400])
 sp1 = subplot(121);
 % diff_3D_mxpu_octo_2(1,:),diff_3D_mxpu_octo_2(end,:)./diff_3D_mxpu_octo_2(end,1), '-o', ...
-semilogx(diff_3D_mxpu_volta_2(1,:),diff_3D_mxpu_volta_2(end,:)./diff_3D_mxpu_volta_2(end,1), '-o', ...
-         diff_3D_mxpu_daint_2(1,:),diff_3D_mxpu_daint_2(end,:)./diff_3D_mxpu_daint_2(end,1), '-o', ...
+semilogx(diff_3D_mxpu_volta_2(1,:),diff_3D_mxpu_volta_2(end,:)./single_volta_diff, '-o', ...
+         diff_3D_mxpu_daint_2(1,:),diff_3D_mxpu_daint_2(end,:)./single_daint_diff, '-o', ...
         'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 title({'3D nonlinear'; 'diffusion'},'fontsize',FS-2)
 ylabel({' ';'\bf{E}'}, 'fontsize',FS)
@@ -122,8 +128,8 @@ text(1.3,ylab2,'a)','fontsize',FS+2,'fontname','Courier')
 
 sp2 = subplot(122);
 % stokes_3D_mxpu_octo_2(1,:),stokes_3D_mxpu_octo_2(end,:)./stokes_3D_mxpu_octo_2(end,1), '-o', ...
-semilogx(stokes_3D_mxpu_volta_2(1,:),stokes_3D_mxpu_volta_2(end,:)./stokes_3D_mxpu_volta_2(end,1), '-o', ...
-         stokes_3D_mxpu_daint_2(1,:),stokes_3D_mxpu_daint_2(end,:)./stokes_3D_mxpu_daint_2(end,1), '-o', ...
+semilogx(stokes_3D_mxpu_volta_2(1,:),stokes_3D_mxpu_volta_2(end,:)./single_volta_stokes, '-o', ...
+         stokes_3D_mxpu_daint_2(1,:),stokes_3D_mxpu_daint_2(end,:)./single_daint_stokes, '-o', ...
      'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 title({'3D visco-elastic'; 'Stokes'},'fontsize',FS-2)
 % ylabel({' ';'\bf{E}'}, 'fontsize',FS)
