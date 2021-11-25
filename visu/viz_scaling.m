@@ -14,8 +14,8 @@ fid = fopen('../output/out_diff_2D_nonlin.txt','r'); diff_2D_nonlin = fscanf(fid
 fid = fopen('../output/out_diff_3D_nonlin.txt','r'); diff_3D_nonlin = fscanf(fid, '%d %d %d %d %d', [5 Inf]); fclose(fid);
 
 FS = 20;
-mylim = [0.25 1.45];% [0.02 1.04];
-ylab = 0.14;
+mylim = [0.22 1.45];% [0.02 1.04];
+ylab = 0.34;
 
 fig1 = 1;
 fig2 = 0;
