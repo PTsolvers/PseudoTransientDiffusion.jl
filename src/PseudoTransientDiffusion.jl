@@ -1,5 +1,5 @@
 module PseudoTransientDiffusion
 
-println("Hello, welcome to PseudoTransientDiffusion.jl")
+greet() = print("Hello World!")
 
-end
+end # module

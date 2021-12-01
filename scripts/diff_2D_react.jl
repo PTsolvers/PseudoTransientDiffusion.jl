@@ -1,7 +1,8 @@
-const USE_GPU = haskey(ENV, "USE_GPU") ? parse(Bool, ENV["USE_GPU"]) : false
-const do_viz  = haskey(ENV, "DO_VIZ")  ? parse(Bool, ENV["DO_VIZ"])  : true
-const nx = haskey(ENV, "NX") ? parse(Int, ENV["NX"]) : 512
-const ny = haskey(ENV, "NY") ? parse(Int, ENV["NY"]) : 512
+const use_return  = haskey(ENV, "USE_RETURN" ) ? parse(Bool, ENV["USE_RETURN"] ) : false
+const USE_GPU     = haskey(ENV, "USE_GPU"    ) ? parse(Bool, ENV["USE_GPU"]    ) : false
+const do_viz      = haskey(ENV, "DO_VIZ"     ) ? parse(Bool, ENV["DO_VIZ"]     ) : true
+const nx          = haskey(ENV, "NX"         ) ? parse(Int , ENV["NX"]         ) : 512
+const ny          = haskey(ENV, "NY"         ) ? parse(Int , ENV["NY"]         ) : 512
 using ParallelStencil
 using ParallelStencil.FiniteDifferences2D
 @static if USE_GPU
@@ -29,7 +30,7 @@ end
     return
 end
 
-@views function diffusion_react_2D()
+@views function diffusion_react_2D_()
     # Physics
     lx, ly  = 10.0, 10.0    # domain size
     D       = 1.0           # diffusion coefficient
@@ -73,7 +74,11 @@ end
     @printf("nx = %d, ny = %d, iterations tot = %d \n", nx, ny, iter)
     # Visualise
     if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0, 1), title="linear diffusion-reaction (iters=$iter)")) end
-    return
+    return xc, yc, H
 end
 
-diffusion_react_2D()
+if use_return
+    xc, yc, H = diffusion_react_2D_()
+else
+    diffusion_react_2D = begin diffusion_react_2D_() end
+end

@@ -1,4 +1,14 @@
+name = "PseudoTransientDiffusion"
+uuid = "b5b0327e-567e-4ee6-9713-fc28d852c7ee"
+authors = ["Ludovic Raess <ludovic.rass@gmail.com> and contributors"]
+version = "0.1.0"
+
 [deps]
+BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
 ParallelStencil = "94395366-693c-11ea-3b26-d9b7aac5d958"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+ReferenceTests = "324d217c-45ce-50fc-942e-d289b448e8cf"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

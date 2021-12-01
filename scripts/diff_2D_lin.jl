@@ -1,9 +1,10 @@
-const USE_GPU = haskey(ENV, "USE_GPU") ? parse(Bool, ENV["USE_GPU"]) : false
-const do_viz  = haskey(ENV, "DO_VIZ")  ? parse(Bool, ENV["DO_VIZ"])  : true
-const do_save = haskey(ENV, "DO_SAVE") ? parse(Bool, ENV["DO_SAVE"]) : false
+const use_return  = haskey(ENV, "USE_RETURN" ) ? parse(Bool, ENV["USE_RETURN"] ) : false
+const USE_GPU     = haskey(ENV, "USE_GPU"    ) ? parse(Bool, ENV["USE_GPU"]    ) : false
+const do_viz      = haskey(ENV, "DO_VIZ"     ) ? parse(Bool, ENV["DO_VIZ"]     ) : true
+const do_save     = haskey(ENV, "DO_SAVE"    ) ? parse(Bool, ENV["DO_SAVE"]    ) : false
 const do_save_viz = haskey(ENV, "DO_SAVE_VIZ") ? parse(Bool, ENV["DO_SAVE_VIZ"]) : false
-const nx = haskey(ENV, "NX") ? parse(Int, ENV["NX"]) : 512
-const ny = haskey(ENV, "NY") ? parse(Int, ENV["NY"]) : 512
+const nx          = haskey(ENV, "NX"         ) ? parse(Int , ENV["NX"]         ) : 512
+const ny          = haskey(ENV, "NY"         ) ? parse(Int , ENV["NY"]         ) : 512
 ###
 using ParallelStencil
 using ParallelStencil.FiniteDifferences2D
@@ -32,7 +33,7 @@ end
     return
 end
 
-@views function diffusion_2D()
+@views function diffusion_2D_()
     # Physics
     lx, ly  = 10.0, 10.0    # domain size
     D       = 1.0           # diffusion coefficient
@@ -92,7 +93,11 @@ end
         !ispath("../out_visu") && mkdir("../out_visu")
         matwrite("../out_visu/diff_2D_lin.mat", Dict("H_2D"=> Array(H), "xc_2D"=> Array(xc), "yc_2D"=> Array(yc)); compress = true)
     end
-    return
+    return xc, yc, H
 end
 
-diffusion_2D()
+if use_return
+    xc, yc, H = diffusion_2D_()
+else
+    diffusion_2D = begin diffusion_2D_() end
+end
