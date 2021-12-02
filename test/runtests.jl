@@ -22,5 +22,4 @@ function runtests()
     return nfail
 end
 
-# runtests()
 exit(runtests())

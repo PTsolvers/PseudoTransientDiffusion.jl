@@ -1,10 +1,11 @@
-const USE_GPU = haskey(ENV, "USE_GPU") ? parse(Bool, ENV["USE_GPU"]) : false
-const do_viz  = haskey(ENV, "DO_VIZ")  ? parse(Bool, ENV["DO_VIZ"])  : false
-const do_save = haskey(ENV, "DO_SAVE") ? parse(Bool, ENV["DO_SAVE"]) : false
+const use_return  = haskey(ENV, "USE_RETURN" ) ? parse(Bool, ENV["USE_RETURN"] ) : false
+const USE_GPU     = haskey(ENV, "USE_GPU"    ) ? parse(Bool, ENV["USE_GPU"]    ) : false
+const do_viz      = haskey(ENV, "DO_VIZ"     ) ? parse(Bool, ENV["DO_VIZ"]     ) : true
+const do_save     = haskey(ENV, "DO_SAVE"    ) ? parse(Bool, ENV["DO_SAVE"]    ) : false
 const do_save_viz = haskey(ENV, "DO_SAVE_VIZ") ? parse(Bool, ENV["DO_SAVE_VIZ"]) : false
-const nx = haskey(ENV, "NX") ? parse(Int, ENV["NX"]) : 64
-const ny = haskey(ENV, "NY") ? parse(Int, ENV["NY"]) : 64
-const nz = haskey(ENV, "NZ") ? parse(Int, ENV["NZ"]) : 64
+const nx          = haskey(ENV, "NX"         ) ? parse(Int , ENV["NX"]         ) : 64
+const ny          = haskey(ENV, "NY"         ) ? parse(Int , ENV["NY"]         ) : 64
+const nz          = haskey(ENV, "NZ"         ) ? parse(Int , ENV["NZ"]         ) : 64
 ###
 using ParallelStencil
 using ParallelStencil.FiniteDifferences3D
@@ -53,7 +54,7 @@ end
     return
 end
 
-@views function diffusion_3D()
+@views function diffusion_3D_()
     # Physics
     lx, ly, lz = 10.0, 10.0, 10.0 # domain size
     ttot       = 1.0              # total simulation time
@@ -137,7 +138,11 @@ end
         matwrite("../../out_visu/diff_3D_nonlin.mat", Dict("H_3D"=> Array(H_v), "xc_3D"=> Array(xc), "yc_3D"=> Array(yc), "zc_3D"=> Array(zc)); compress = true)
     end
     finalize_global_grid()
-    return
+    return xc, yc, zc, H
 end
 
-diffusion_3D()
+if use_return
+    xc, yc, zc, H = diffusion_3D_()
+else
+    diffusion_3D = begin diffusion_3D_() end
+end
