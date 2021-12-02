@@ -32,7 +32,7 @@ where `D` stands for the diffusion coefficient, defined as
 - `D=1` or `D=1e-4` in the linear step function case;
 - `D=H^3` in the nonlinear (power-law) case.
 
-<img src="visu/fig_ini.png" alt="Initial conditions for the transient diffusion problem" width="600">
+<img src="visu/fig_ini.png" alt="Initial conditions for the transient diffusion problem" width="800">
 
 ## Scripts
 The [**scripts**](/scripts) folder contains the various Julia routines to solve the diffusion equation in 1D (`diff_1D_*.jl`), 2D (`diff_2D_*.jl`) and 3D (`diff_3D_*.jl`). The 3D scripts are grouped in a separate [diff_3D](/scripts/diff_3D) including shell scripts to automatise multi-XPU execution. All Julia routines depend on:
