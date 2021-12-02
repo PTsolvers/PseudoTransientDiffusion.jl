@@ -32,6 +32,8 @@ where `D` stands for the diffusion coefficient, defined as
 - `D=1` or `D=1e-4` in the linear step function case;
 - `D=H^3` in the nonlinear (power-law) case.
 
+We use the following initial condition in 1D, 2D, 3D, respectively:
+ 
 <img src="visu/fig_ini.png" alt="Initial conditions for the transient diffusion problem" width="800">
 
 ## Scripts
