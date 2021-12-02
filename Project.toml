@@ -1,6 +1,6 @@
 name = "PseudoTransientDiffusion"
 uuid = "b5b0327e-567e-4ee6-9713-fc28d852c7ee"
-authors = ["Ludovic Raess <ludovic.rass@gmail.com> and contributors"]
+authors = ["Ludovic Raess <ludovic.rass@gmail.com>, Ivan Utkin and contributors"]
 version = "0.1.0"
 
 [deps]
