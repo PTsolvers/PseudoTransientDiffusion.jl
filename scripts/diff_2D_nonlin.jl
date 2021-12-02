@@ -106,7 +106,7 @@ end
 end
 
 if use_return
-    xc, yc, H = diffusion_2D_()
+    xc, yc, H = diffusion_2D_();
 else
-    diffusion_2D = begin diffusion_2D_() end
+    diffusion_2D = begin diffusion_2D_(); return; end
 end

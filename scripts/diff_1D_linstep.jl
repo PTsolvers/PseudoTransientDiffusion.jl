@@ -107,7 +107,7 @@ end
 end
 
 if use_return
-    xc, H = diffusion_1D_()
+    xc, H = diffusion_1D_();
 else
-    diffusion_1D = begin diffusion_1D_() end
+    diffusion_1D = begin diffusion_1D_(); return; end
 end

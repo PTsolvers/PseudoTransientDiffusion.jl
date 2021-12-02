@@ -74,7 +74,7 @@ end
 end
 
 if use_return
-    xc, H = diffusion_react_1D_()
+    xc, H = diffusion_react_1D_();
 else
-    diffusion_react_1D = begin diffusion_react_1D_() end
+    diffusion_react_1D = begin diffusion_react_1D_(); return; end
 end

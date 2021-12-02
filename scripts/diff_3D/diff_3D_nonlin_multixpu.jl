@@ -142,7 +142,7 @@ end
 end
 
 if use_return
-    xc, yc, zc, H = diffusion_3D_()
+    xc, yc, zc, H = diffusion_3D_();
 else
-    diffusion_3D = begin diffusion_3D_() end
+    diffusion_3D = begin diffusion_3D_(); return; end
 end

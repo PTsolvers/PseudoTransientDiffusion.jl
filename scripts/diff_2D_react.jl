@@ -78,7 +78,7 @@ end
 end
 
 if use_return
-    xc, yc, H = diffusion_react_2D_()
+    xc, yc, H = diffusion_react_2D_();
 else
-    diffusion_react_2D = begin diffusion_react_2D_() end
+    diffusion_react_2D = begin diffusion_react_2D_(); return; end
 end
