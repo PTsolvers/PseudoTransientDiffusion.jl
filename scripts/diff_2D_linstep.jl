@@ -69,7 +69,7 @@ end
     max_lxy = max(lx, ly)
     Re      = π + sqrt(π^2 + (max_lxy^2 / max(D1,D2)) / dt)
     θr_dτ   = max_lxy / Vpdτ / Re
-    xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
+    xc, yc  = LinRange(dx/2, lx - dx/2, nx), LinRange(dy/2, ly - dy/2, ny)
     # Array allocation
     qHx     = @zeros(nx-1, ny-2)
     qHy     = @zeros(nx-2, ny-1)
@@ -81,7 +81,7 @@ end
     D       = D1 * @ones(nx,ny)
     D[1:Int(ceil(nx / 2.2)),:] .= D2
     D[:,1:Int(ceil(ny / 2.2))] .= D2
-    H0      = Data.Array(exp.(-xc.^2 .- (yc').^2))
+    H0      = Data.Array(exp.(-(xc .- lx/2).^2 .- ((yc .- ly/2)').^2))
     Hold    = @ones(nx,ny) .* H0
     H       = @ones(nx,ny) .* H0
     @parallel compute_iter_params!(dτ_ρ, D, Re, Vpdτ, max_lxy)

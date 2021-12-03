@@ -70,7 +70,7 @@ end
     Vpdτ    = CFL * min(dx, dy)
     max_lxy = max(lx, ly)
     max_lxy2= max_lxy^2
-    xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
+    xc, yc  = LinRange(dx/2, lx - dx/2, nx), LinRange(dy/2, ly - dy/2, ny)
     _dx, _dy, _dt = 1.0/dx, 1.0/dy, 1.0/dt
     # Array allocation
     qHx     = @zeros(nx-1, ny-2)
@@ -79,7 +79,7 @@ end
     qHy2    = @zeros(nx-2, ny-1)
     ResH    = @zeros(nx-2, ny-2)
     # Initial condition
-    H0      = Data.Array(exp.(-xc.^2 .- (yc').^2))
+    H0      = Data.Array(exp.(-(xc .- lx/2).^2 .- ((yc .- ly/2)').^2))
     Hold    = @ones(nx,ny) .* H0
     H       = @ones(nx,ny) .* H0
     size_innH_1, size_innH_2 = size(H,1)-2, size(H,2)-2

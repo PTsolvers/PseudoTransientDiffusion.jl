@@ -51,13 +51,13 @@ end
     # Derived numerics
     dx     = lx / nx      # grid size
     Vpdτ   = CFL * dx
-    xc     = LinRange(dx / 2, lx - dx / 2, nx)
+    xc     = LinRange(dx/2, lx - dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
     qHx2   = @zeros(nx-1)
     ResH   = @zeros(nx-2)
     # Initial condition
-    H0     = Data.Array(exp.(-(xc .- lx / 2).^2))
+    H0     = Data.Array(exp.(-(xc .- lx/2).^2))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
     t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot / dt))

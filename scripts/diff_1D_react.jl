@@ -45,13 +45,13 @@ end
     Vpdτ    = CFL * dx
     θr_θkin = lx / Vpdτ / Da
     θkin_ρ  = Vpdτ * lx / D / Da
-    xc      = LinRange(-lx / 2, lx / 2, nx)
+    xc      = LinRange(dx/2, lx - dx/2, nx)
     # Array allocation
     qHx     = @zeros(nx - 1)
     qHx2    = @zeros(nx - 1)
     ResH    = @zeros(nx - 2)
     # Initial condition
-    H0     = Data.Array(exp.(-xc.^2))
+    H0     = Data.Array(exp.(-(xc .- lx/2).^2))
     Heq    = @ones(nx) .* H0
     H      = @zeros(nx)
     # Time loop

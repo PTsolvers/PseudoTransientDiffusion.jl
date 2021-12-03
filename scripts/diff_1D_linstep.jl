@@ -59,7 +59,7 @@ end
     Vpdτ   = CFL * dx
     Re     = π + sqrt(π^2 + (lx^2 / max(D1,D2)) / dt)
     θr_dτ  = lx / Vpdτ / Re
-    xc     = LinRange(-lx / 2, lx / 2, nx)
+    xc     = LinRange(dx/2, lx - dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
     qHx2   = @zeros(nx-1)
@@ -68,7 +68,7 @@ end
     # Initial condition
     D      = D1 * @ones(nx)
     D[1:Int(ceil(nx / 2.2))] .= D2
-    H0     = Data.Array(exp.(-xc.^2))
+    H0     = Data.Array(exp.(-(xc .- lx/2).^2))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
     @parallel compute_iter_params!(dτ_ρ, D, Re, Vpdτ, lx)

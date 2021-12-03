@@ -48,14 +48,14 @@ end
     Re     = π + sqrt(π^2 + (lx^2 / D / dt)) # Numerical Reynolds number
     θr_dτ  = lx / Vpdτ / Re
     dτ_ρ   = Vpdτ * lx / D / Re
-    xc     = LinRange(-lx / 2, lx / 2, nx)
+    xc     = LinRange(dx/2, lx - dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
     qHx2   = @zeros(nx-1)
     ResH   = @zeros(nx-2)
     dH     = @zeros(nx-2)
     # Initial condition
-    H0     = Data.Array(exp.(-xc.^2 / D))
+    H0     = Data.Array(exp.(-(xc .- lx/2).^2 / D))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
     t = 0.0; it = 0; ittot = 0; nt = Int(ceil(ttot/dt))
@@ -77,7 +77,7 @@ end
         if isnan(err) error("NaN") end
     end
     # Analytic solution
-    Hana = 1 / sqrt(4 * (ttot + 1 / 4)) * exp.(-xc.^2 / (4 * D * (ttot + 1 / 4)))
+    Hana = 1 / sqrt(4 * (ttot + 1 / 4)) * exp.(-(xc .- lx/2).^2 / (4 * D * (ttot + 1 / 4)))
     @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d, error vs analytic = %1.2e \n", round(ttot, sigdigits=2), it, nx, ittot, norm(Array(H) - Hana) / sqrt(nx))
     # Visualise
     if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, [Array(H) Array(Hana)], legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion (nt=$it, iters=$ittot)")) end

@@ -17,7 +17,7 @@ using Plots, Printf, LinearAlgebra
     # Derived numerics
     dx     = lx / nx    # grid size
     Vpdτ   = CFL * dx
-    xc     = LinRange(dx / 2, lx - dx / 2, nx)
+    xc     = LinRange(dx/2, lx - dx/2, nx)
     # Array allocation
     qHx    = zeros(nx-1)
     qHx2   = zeros(nx-1)
@@ -26,7 +26,7 @@ using Plots, Printf, LinearAlgebra
     θr_dτ  = zeros(nx-1)
     dτ_ρ   = zeros(nx-2)
     # Initial condition
-    H0     = exp.(-(xc .- lx / 2).^2)
+    H0     = exp.(-(xc .- lx/2).^2)
     Hold   = ones(nx) .* H0
     H      = ones(nx) .* H0
     D      = H.^3
