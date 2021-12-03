@@ -2,15 +2,15 @@
 
 [![Build Status](https://github.com/PTsolvers/PseudoTransientDiffusion.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/PTsolvers/PseudoTransientDiffusion.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-Parallel (multi-) XPU iterative 1D, 2D and 3D diffusion solvers (resolving linear, step-function and nonlinear diffusion coefficient). This software is part of the [the PTsolvers project](https://ptsolvers.github.io/).
+Parallel (multi-) XPU iterative 1D, 2D and 3D diffusion solvers (resolving linear, step-function and nonlinear diffusion coefficient). This software is part of the [the **PTsolvers project**](https://ptsolvers.github.io/).
 
 The aim of this project is to provide iterative solvers **assessing the scalability, performance, and robustness of the accelerated pseudo-transient method** with application to diffusion processes. The solution strategy characterises as semi-iterative, implementing the second-order convergence acceleration as introduced by, e.g., \[[Frankel, 1950](https://doi.org/10.2307/2002770)\].
 
-This repository relates to the original research article draft submitted to the _**Journal of Computational Physics**_:
+This repository relates to the original research article draft submitted to the _**Journal XXX**_:
 ```tex
-@article{raess2022jcp,
-    title = {{Assessing the scalability, performance, and robustness of the accelerated pseudo-transient method}},
-    journal = {Journal of Computational Physics}
+@article{raess2022,
+    title = {{ }},
+    journal = {Journal XXX}
 }
 ```
 
@@ -75,7 +75,6 @@ defaulting to `512` in 1D and 2D and `64` in 3D. Running, e.g., a script from th
 ```shell
 USE_GPU=true julia --project --check-bounds=no -O3 diff_<script_name>.jl
 ```
-
 
 ## Optimal iteration parameters
 The folder [**dispersion_analysis**](/dispersion_analysis) contains the analytical derivations for the values of iteration parameters. We provide these derivations for 1D stationary and transient diffusion problems. Only the case of `D=const` is considered.
