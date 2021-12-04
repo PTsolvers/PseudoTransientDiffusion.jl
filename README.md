@@ -2,11 +2,11 @@
 
 [![Build Status](https://github.com/PTsolvers/PseudoTransientDiffusion.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/PTsolvers/PseudoTransientDiffusion.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-Parallel (multi-) XPU iterative 1D, 2D and 3D diffusion solvers (resolving linear, step-function and nonlinear diffusion coefficient). This software is part of the [the **PTsolvers project**](https://ptsolvers.github.io/).
+Parallel (multi-) XPU iterative 1D, 2D and 3D diffusion solvers (resolving linear, step-function and nonlinear diffusion coefficient). This software is part of the [**PTsolvers project**](https://ptsolvers.github.io/).
 
 The aim of this project is to provide iterative solvers **assessing the scalability, performance, and robustness of the accelerated pseudo-transient method** with application to diffusion processes. The solution strategy characterises as semi-iterative, implementing the second-order convergence acceleration as introduced by, e.g., \[[Frankel, 1950](https://doi.org/10.2307/2002770)\].
 
-This repository relates to the original research article draft submitted to the _**Journal XXX**_:
+This repository, together with [PseudoTransientStokes.jl](https://github.com/PTsolvers/PseudoTransientStokes.jl/), relates to the original research article draft submitted to the _**Journal XXX**_:
 ```tex
 @article{raess2022,
     title = {{ }},
