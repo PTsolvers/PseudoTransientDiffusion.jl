@@ -25,21 +25,21 @@ plot(xc_1D, H0_1D, xc_1D, lin_1D, 'linewidth',3), axis square, set(gca, 'fontsiz
 ylabel({'\bf{linear}';'diffusion'}, 'fontsize',FS)
 set(gca, 'XTick', [])
 set(gca,'fontname','Courier')
-text(0.5,0.9,'a)','fontsize',FS+2,'fontname','Courier')
+text(0.5,0.9,'(a)','fontsize',FS+2,'fontname','Courier')
 
 sp4 = subplot(334);
 plot(xc_1D, H0_1D, xc_1D, linstep_1D, 'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 ylabel({'\bf{linear step}';'diffusion'}, 'fontsize',FS)
 set(gca, 'XTick', [])
 set(gca,'fontname','Courier')
-text(0.5,0.9,'d)','fontsize',FS+2,'fontname','Courier')
+text(0.5,0.9,'(d)','fontsize',FS+2,'fontname','Courier')
 
 sp7 = subplot(337);
 plot(xc_1D, H0_1D, xc_1D, nonlin_1D, 'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
 xlabel('\bf{lx}', 'fontsize',FS)
 ylabel({'\bf{nonlinear}';'diffusion'}, 'fontsize',FS)
 set(gca,'fontname','Courier')
-text(0.5,0.9,'g)','fontsize',FS+2,'fontname','Courier')
+text(0.5,0.9,'(g)','fontsize',FS+2,'fontname','Courier')
 
 % 2D
 sp2 = subplot(332); imagesc(xc_2D, yc_2D, lin_2D'), axis xy equal tight, set(gca, 'fontsize',FS, 'linewidth',1.3)
@@ -48,7 +48,7 @@ set(gca, 'YTick', [0.1 9.9], 'YTicklabel', [0 10], 'fontsize',FS)
 set(gca,'fontname','Courier')
 ylabel('\bf{ly}', 'fontsize',FS)
 caxis([0 1])
-text(0.5,9,'b)','fontsize',FS+2,'fontname','Courier','Color','w')
+text(0.5,9,'(b)','fontsize',FS+2,'fontname','Courier','Color','w')
 
 sp5 = subplot(335); imagesc(xc_2D, yc_2D, linstep_2D'), axis xy equal tight, set(gca, 'fontsize',FS, 'linewidth',1.3)
 set(gca, 'XTick', [])
@@ -56,7 +56,7 @@ set(gca, 'YTick', [0.1 9.9], 'YTicklabel', [0 10], 'fontsize',FS)
 set(gca,'fontname','Courier')
 ylabel('\bf{ly}', 'fontsize',FS)
 caxis([0 1])
-text(0.5,9,'e)','fontsize',FS+2,'fontname','Courier','Color','w')
+text(0.5,9,'(e)','fontsize',FS+2,'fontname','Courier','Color','w')
 
 sp8 = subplot(338); imagesc(xc_2D, yc_2D, nonlin_2D'), axis xy equal tight, set(gca, 'fontsize',FS, 'linewidth',1.3)
 set(gca, 'XTick', [0.1 9.9], 'XTicklabel', [0 10], 'fontsize',FS)
@@ -64,7 +64,7 @@ set(gca, 'YTick', [0.1 9.9], 'YTicklabel', [0 10], 'fontsize',FS)
 set(gca,'fontname','Courier')
 xlabel('\bf{lx}', 'fontsize',FS), ylabel('\bf{ly}', 'fontsize',FS)
 caxis([0 1])
-text(0.5,9,'h)','fontsize',FS+2,'fontname','Courier','Color','w')
+text(0.5,9,'(h)','fontsize',FS+2,'fontname','Courier','Color','w')
 
 % 3D
 tp = {lin_3D, linstep_3D, nonlin_3D};
@@ -117,11 +117,11 @@ for ip=1:length(tp)
         text(340,180,-130,'\bf{H}','fontsize',FS+2,'fontname','Courier')
     end
     if ip==1
-        text(350,160,340,'c)','fontsize',FS+2,'fontname','Courier')
+        text(350,160,350,'(c)','fontsize',FS+2,'fontname','Courier')
     elseif ip==2
-        text(350,160,340,'f)','fontsize',FS+2,'fontname','Courier')
+        text(350,160,350,'(f)','fontsize',FS+2,'fontname','Courier')
     else
-        text(350,160,340,'i)','fontsize',FS+2,'fontname','Courier')
+        text(350,160,350,'(i)','fontsize',FS+2,'fontname','Courier')
     end
     
     set(gca,'fontname','Courier')
@@ -151,4 +151,4 @@ pos9 = get(sp9,'position'); set(sp9,'position',[pos9(1)*1.05 pos9(2) pos9(3) pos
 
 fig = gcf;
 fig.PaperPositionMode = 'auto';
-print('fig_final','-dpng','-r300')
+% print('fig_final','-dpng','-r300')

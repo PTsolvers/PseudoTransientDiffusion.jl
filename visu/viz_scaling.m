@@ -38,7 +38,7 @@ xtickangle(45)
 xlabel('\bf{nx}', 'fontsize',FS)
 title({'linear'; 'diffusion'})
 set(gca,'fontname','Courier')
-text(85,ylab,'a)','fontsize',FS+2,'fontname','Courier')
+text(75,ylab,'(a)','fontsize',FS+2,'fontname','Courier')
 
 sp2 = subplot(132);
 st = 2;
@@ -52,7 +52,7 @@ set(gca, 'XTick',diff_1D_linstep(1,st:end),'YTicklabel',[])
 xtickangle(45)
 xlabel('\bf{nx}', 'fontsize',FS)
 set(gca,'fontname','Courier')
-text(85,ylab,'b)','fontsize',FS+2,'fontname','Courier')
+text(75,ylab,'(b)','fontsize',FS+2,'fontname','Courier')
 
 sp3 = subplot(133);
 st = 2;
@@ -67,7 +67,7 @@ set(gca, 'XTick',diff_1D_nonlin(1,st:end),'YTicklabel',[])
 xtickangle(45)
 xlabel('\bf{nx}', 'fontsize',FS)
 set(gca,'fontname','Courier')
-text(85,ylab,'c)','fontsize',FS+2,'fontname','Courier')
+text(75,ylab,'(c)','fontsize',FS+2,'fontname','Courier')
 
 pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*0.9   pos1(2) pos1(3)*1.1 pos1(4)*1.1])
 pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.97  pos2(2) pos2(3)*1.1 pos2(4)*1.1])
