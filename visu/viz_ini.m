@@ -26,7 +26,7 @@ plot(xc_1D, H0_1D, 'linewidth',3), axis square, set(gca, 'fontsize',FS, 'linewid
 xlabel('\bf{lx}', 'fontsize',FS)
 ylabel('\bf{H_{initial}}', 'fontsize',FS)
 set(gca,'fontname','Courier')
-text(0.5,0.9,'a)','fontsize',FS+2,'fontname','Courier')
+text(0.5,0.9,'(a)','fontsize',FS+2,'fontname','Courier')
 
 sp2 = subplot(132); imagesc(xc_2D, yc_2D, H0_2D'), axis xy equal tight, set(gca, 'fontsize',FS, 'linewidth',1.3)
 set(gca, 'XTick', [0.1 9.9], 'XTicklabel', [0 10], 'fontsize',FS)
@@ -34,7 +34,7 @@ set(gca, 'YTick', [0.1 9.9], 'YTicklabel', [0 10], 'fontsize',FS)
 set(gca,'fontname','Courier')
 xlabel('\bf{lx}', 'fontsize',FS)
 ylabel('\bf{ly}', 'fontsize',FS)
-text(0.5,9,'b)','fontsize',FS+2,'fontname','Courier','Color','w')
+text(0.5,9,'(b)','fontsize',FS+2,'fontname','Courier','Color','w')
 
 sp3 = subplot(133);
 nx = size(H0_3D,1); ny = size(H0_3D,2); nz = size(H0_3D,3);
@@ -76,7 +76,7 @@ set(gca, 'ZTick', [10 nz-5], 'ZTicklabel', [0 10], 'fontsize',FS)
 text(150,315,0,'\bf{ly}','fontsize',FS,'fontname','Courier') %xlabel('lx','fontsize',FS)
 text(350,160,0,'\bf{lx}','fontsize',FS,'fontname','Courier') %ylabel('ly','fontsize',FS)
 zlabel('\bf{lz}','fontsize',FS)
-text(350,160,340,'c)','fontsize',FS+2,'fontname','Courier')
+text(350,160,350,'(c)','fontsize',FS+2,'fontname','Courier')
 
 cb = colorbar;
 cb.Location = 'southoutside';

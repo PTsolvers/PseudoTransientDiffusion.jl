@@ -59,7 +59,7 @@ mylim2 = [0.959 1.003];
 mylimx = [0.8 3.e3];
 ylab2 = 0.963;
 
-fig1 = 0;
+fig1 = 1;
 fig2 = 1;
 
 %%
@@ -80,7 +80,7 @@ set(gca, 'XTick',diff_2D_octo_2(1,:))
 xtickangle(45)
 set(gca,'fontname','Courier')
 xlabel('\bf{nx}', 'fontsize',FS)
-text(40,ylab,'a)','fontsize',FS+2,'fontname','Courier')
+text(35,ylab,'(a)','fontsize',FS+2,'fontname','Courier')
 
 
 sp2 = subplot(122);
@@ -98,7 +98,7 @@ set(gca, 'XTick',diff_3D_volta_2(2,:), 'YTicklabel',[])
 xtickangle(45)
 set(gca,'fontname','Courier')
 xlabel('\bf{nx}', 'fontsize',FS)
-text(37,ylab,'b)','fontsize',FS+2,'fontname','Courier')
+text(33,ylab,'(b)','fontsize',FS+2,'fontname','Courier')
 
 pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*0.97  pos1(2)*1.15 pos1(3)*1 pos1(4)*1])
 pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.97  pos2(2)*1.15 pos2(3)*1 pos2(4)*1])
@@ -124,7 +124,7 @@ set(gca, 'XTick',diff_3D_mxpu_daint_2(1,:))
 xtickangle(45)
 set(gca,'fontname','Courier')
 xlabel('\bf{P (GPUs)}', 'fontsize',FS)
-text(1.3,ylab2,'a)','fontsize',FS+2,'fontname','Courier')
+text(1.1,ylab2,'(a)','fontsize',FS+2,'fontname','Courier')
 
 sp2 = subplot(122);
 % stokes_3D_mxpu_octo_2(1,:),stokes_3D_mxpu_octo_2(end,:)./stokes_3D_mxpu_octo_2(end,1), '-o', ...
@@ -140,7 +140,7 @@ set(gca, 'XTick',stokes_3D_mxpu_daint_2(1,:), 'YTicklabel',[])
 xtickangle(45)
 set(gca,'fontname','Courier')
 xlabel('\bf{P (GPUs)}', 'fontsize',FS)
-text(1.3,ylab2,'b)','fontsize',FS+2,'fontname','Courier')
+text(1.1,ylab2,'(b)','fontsize',FS+2,'fontname','Courier')
 
 pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*1.04  pos1(2)*1.2 pos1(3)*1 pos1(4)*1])
 pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.96  pos2(2)*1.2 pos2(3)*1 pos2(4)*1])
