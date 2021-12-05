@@ -1,6 +1,8 @@
-const USE_GPU = haskey(ENV, "USE_GPU") ? parse(Bool, ENV["USE_GPU"]) : false
-const do_viz  = haskey(ENV, "DO_VIZ")  ? parse(Bool, ENV["DO_VIZ"])  : true
-const nx = haskey(ENV, "NX") ? parse(Int, ENV["NX"]) : 512
+const use_return  = haskey(ENV, "USE_RETURN" ) ? parse(Bool, ENV["USE_RETURN"] ) : false
+const USE_GPU     = haskey(ENV, "USE_GPU"    ) ? parse(Bool, ENV["USE_GPU"]    ) : false
+const do_viz      = haskey(ENV, "DO_VIZ"     ) ? parse(Bool, ENV["DO_VIZ"]     ) : true
+const nx          = haskey(ENV, "NX"         ) ? parse(Int , ENV["NX"]         ) : 512
+###
 using ParallelStencil
 using ParallelStencil.FiniteDifferences1D
 @static if USE_GPU
@@ -26,7 +28,7 @@ end
     return
 end
 
-@views function diffusion_react_1D()
+@views function diffusion_react_1D_()
     # Physics
     lx      = 20.0       # domain size
     D       = 1          # diffusion coefficient
@@ -43,13 +45,13 @@ end
     Vpdτ    = CFL * dx
     θr_θkin = lx / Vpdτ / Da
     θkin_ρ  = Vpdτ * lx / D / Da
-    xc      = LinRange(-lx / 2, lx / 2, nx)
+    xc      = LinRange(dx/2, lx - dx/2, nx)
     # Array allocation
     qHx     = @zeros(nx - 1)
     qHx2    = @zeros(nx - 1)
     ResH    = @zeros(nx - 2)
     # Initial condition
-    H0     = Data.Array(exp.(-xc.^2))
+    H0     = Data.Array(exp.(-(xc .- lx/2).^2))
     Heq    = @ones(nx) .* H0
     H      = @zeros(nx)
     # Time loop
@@ -68,7 +70,11 @@ end
     @printf("nx = %d, iterations tot = %d \n", nx, iter)
     # Visualise
     if do_viz plot(xc, Array(H0), linewidth=3); display(plot!(xc, Array(H), legend=false, framestyle=:box, linewidth=3, xlabel="lx", ylabel="H", title="linear diffusion-reaction (iters=$iter)")) end
-    return
+    return xc, H
 end
 
-diffusion_react_1D()
+if use_return
+    xc, H = diffusion_react_1D_();
+else
+    diffusion_react_1D = begin diffusion_react_1D_(); return; end
+end

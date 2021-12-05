@@ -1,7 +1,8 @@
-const USE_GPU = haskey(ENV, "USE_GPU") ? parse(Bool, ENV["USE_GPU"]) : false
-const do_viz  = haskey(ENV, "DO_VIZ")  ? parse(Bool, ENV["DO_VIZ"])  : true
-const nx = haskey(ENV, "NX") ? parse(Int, ENV["NX"]) : 512
-const ny = haskey(ENV, "NY") ? parse(Int, ENV["NY"]) : 512
+const use_return  = haskey(ENV, "USE_RETURN" ) ? parse(Bool, ENV["USE_RETURN"] ) : false
+const USE_GPU     = haskey(ENV, "USE_GPU"    ) ? parse(Bool, ENV["USE_GPU"]    ) : false
+const do_viz      = haskey(ENV, "DO_VIZ"     ) ? parse(Bool, ENV["DO_VIZ"]     ) : true
+const nx          = haskey(ENV, "NX"         ) ? parse(Int , ENV["NX"]         ) : 512
+const ny          = haskey(ENV, "NY"         ) ? parse(Int , ENV["NY"]         ) : 512
 using ParallelStencil
 using ParallelStencil.FiniteDifferences2D
 @static if USE_GPU
@@ -29,7 +30,7 @@ end
     return
 end
 
-@views function diffusion_react_2D()
+@views function diffusion_react_2D_()
     # Physics
     lx, ly  = 10.0, 10.0    # domain size
     D       = 1.0           # diffusion coefficient
@@ -46,7 +47,7 @@ end
     Vpdτ    = CFL * min(dx, dy)
     θr_θkin = max(lx, ly) / Vpdτ / Da
     θkin_ρ  = Vpdτ * max(lx, ly) / D / Da
-    xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
+    xc, yc  = LinRange(dx/2, lx - dx/2, nx), LinRange(dy/2, ly - dy/2, ny)
     # Array allocation
     qHx     = @zeros(nx - 1,ny - 2)
     qHy     = @zeros(nx - 2,ny - 1)
@@ -54,7 +55,7 @@ end
     qHy2    = @zeros(nx - 2,ny - 1)
     ResH    = @zeros(nx - 2,ny - 2)
     # Initial condition
-    H0      = Data.Array(exp.(-xc.^2 .- (yc').^2))
+    H0      = Data.Array(exp.(-(xc .- lx/2).^2 .- ((yc .- ly/2)').^2))
     Heq     = @ones(nx,ny) .* H0
     H       = @zeros(nx,ny)
     # Time loop
@@ -73,7 +74,11 @@ end
     @printf("nx = %d, ny = %d, iterations tot = %d \n", nx, ny, iter)
     # Visualise
     if do_viz display(heatmap(xc, yc, Array(H'), aspect_ratio=1, framestyle=:box, xlims=(xc[1], xc[end]), ylims=(yc[1], yc[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0, 1), title="linear diffusion-reaction (iters=$iter)")) end
-    return
+    return xc, yc, H
 end
 
-diffusion_react_2D()
+if use_return
+    xc, yc, H = diffusion_react_2D_();
+else
+    diffusion_react_2D = begin diffusion_react_2D_(); return; end
+end

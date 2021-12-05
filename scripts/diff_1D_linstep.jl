@@ -1,8 +1,9 @@
-const USE_GPU = haskey(ENV, "USE_GPU") ? parse(Bool, ENV["USE_GPU"]) : false
-const do_viz  = haskey(ENV, "DO_VIZ")  ? parse(Bool, ENV["DO_VIZ"])  : true
-const do_save = haskey(ENV, "DO_SAVE") ? parse(Bool, ENV["DO_SAVE"]) : false
+const use_return  = haskey(ENV, "USE_RETURN" ) ? parse(Bool, ENV["USE_RETURN"] ) : false
+const USE_GPU     = haskey(ENV, "USE_GPU"    ) ? parse(Bool, ENV["USE_GPU"]    ) : false
+const do_viz      = haskey(ENV, "DO_VIZ"     ) ? parse(Bool, ENV["DO_VIZ"]     ) : true
+const do_save     = haskey(ENV, "DO_SAVE"    ) ? parse(Bool, ENV["DO_SAVE"]    ) : false
 const do_save_viz = haskey(ENV, "DO_SAVE_VIZ") ? parse(Bool, ENV["DO_SAVE_VIZ"]) : false
-const nx = haskey(ENV, "NX") ? parse(Int, ENV["NX"]) : 512
+const nx          = haskey(ENV, "NX"         ) ? parse(Int , ENV["NX"]         ) : 512
 ###
 using ParallelStencil
 using ParallelStencil.FiniteDifferences1D
@@ -40,7 +41,7 @@ end
     return
 end
 
-@views function diffusion_1D()
+@views function diffusion_1D_()
     # Physics
     lx     = 10.0       # domain size
     D1     = 1.0        # diffusion coefficient
@@ -58,7 +59,7 @@ end
     Vpdτ   = CFL * dx
     Re     = π + sqrt(π^2 + (lx^2 / max(D1,D2)) / dt)
     θr_dτ  = lx / Vpdτ / Re
-    xc     = LinRange(-lx / 2, lx / 2, nx)
+    xc     = LinRange(dx/2, lx - dx/2, nx)
     # Array allocation
     qHx    = @zeros(nx-1)
     qHx2   = @zeros(nx-1)
@@ -67,7 +68,7 @@ end
     # Initial condition
     D      = D1 * @ones(nx)
     D[1:Int(ceil(nx / 2.2))] .= D2
-    H0     = Data.Array(exp.(-xc.^2))
+    H0     = Data.Array(exp.(-(xc .- lx/2).^2))
     Hold   = @ones(nx) .* H0
     H      = @ones(nx) .* H0
     @parallel compute_iter_params!(dτ_ρ, D, Re, Vpdτ, lx)
@@ -102,7 +103,11 @@ end
         !ispath("../out_visu") && mkdir("../out_visu")
         matwrite("../out_visu/diff_1D_linstep.mat", Dict("H_1D"=> Array(H), "xc_1D"=> Array(xc)); compress = true)
     end
-    return
+    return xc, H
 end
 
-diffusion_1D()
+if use_return
+    xc, H = diffusion_1D_();
+else
+    diffusion_1D = begin diffusion_1D_(); return; end
+end

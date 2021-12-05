@@ -1,9 +1,10 @@
-const USE_GPU = haskey(ENV, "USE_GPU") ? parse(Bool, ENV["USE_GPU"]) : false
-const do_viz  = haskey(ENV, "DO_VIZ")  ? parse(Bool, ENV["DO_VIZ"])  : true
-const do_save = haskey(ENV, "DO_SAVE") ? parse(Bool, ENV["DO_SAVE"]) : false
+const use_return  = haskey(ENV, "USE_RETURN" ) ? parse(Bool, ENV["USE_RETURN"] ) : false
+const USE_GPU     = haskey(ENV, "USE_GPU"    ) ? parse(Bool, ENV["USE_GPU"]    ) : false
+const do_viz      = haskey(ENV, "DO_VIZ"     ) ? parse(Bool, ENV["DO_VIZ"]     ) : true
+const do_save     = haskey(ENV, "DO_SAVE"    ) ? parse(Bool, ENV["DO_SAVE"]    ) : false
 const do_save_viz = haskey(ENV, "DO_SAVE_VIZ") ? parse(Bool, ENV["DO_SAVE_VIZ"]) : false
-const nx = haskey(ENV, "NX") ? parse(Int, ENV["NX"]) : 512
-const ny = haskey(ENV, "NY") ? parse(Int, ENV["NY"]) : 512
+const nx          = haskey(ENV, "NX"         ) ? parse(Int , ENV["NX"]         ) : 512
+const ny          = haskey(ENV, "NY"         ) ? parse(Int , ENV["NY"]         ) : 512
 ###
 using ParallelStencil
 using ParallelStencil.FiniteDifferences2D
@@ -49,7 +50,7 @@ end
     return
 end
 
-@views function diffusion_2D()
+@views function diffusion_2D_()
     # Physics
     lx, ly  = 10.0, 10.0    # domain size
     D1      = 1.0           # diffusion coefficient
@@ -68,7 +69,7 @@ end
     max_lxy = max(lx, ly)
     Re      = π + sqrt(π^2 + (max_lxy^2 / max(D1,D2)) / dt)
     θr_dτ   = max_lxy / Vpdτ / Re
-    xc, yc  = LinRange(-lx / 2, lx / 2, nx), LinRange(-ly / 2, ly / 2, ny)
+    xc, yc  = LinRange(dx/2, lx - dx/2, nx), LinRange(dy/2, ly - dy/2, ny)
     # Array allocation
     qHx     = @zeros(nx-1, ny-2)
     qHy     = @zeros(nx-2, ny-1)
@@ -80,7 +81,7 @@ end
     D       = D1 * @ones(nx,ny)
     D[1:Int(ceil(nx / 2.2)),:] .= D2
     D[:,1:Int(ceil(ny / 2.2))] .= D2
-    H0      = Data.Array(exp.(-xc.^2 .- (yc').^2))
+    H0      = Data.Array(exp.(-(xc .- lx/2).^2 .- ((yc .- ly/2)').^2))
     Hold    = @ones(nx,ny) .* H0
     H       = @ones(nx,ny) .* H0
     @parallel compute_iter_params!(dτ_ρ, D, Re, Vpdτ, max_lxy)
@@ -115,7 +116,11 @@ end
         !ispath("../out_visu") && mkdir("../out_visu")
         matwrite("../out_visu/diff_2D_linstep.mat", Dict("H_2D"=> Array(H), "xc_2D"=> Array(xc), "yc_2D"=> Array(yc)); compress = true)
     end
-    return
+    return xc, yc, H
 end
 
-diffusion_2D()
+if use_return
+    xc, yc, H = diffusion_2D_();
+else
+    diffusion_2D = begin diffusion_2D_(); return; end
+end
