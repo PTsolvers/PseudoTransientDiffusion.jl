@@ -1,6 +1,7 @@
 # PseudoTransientDiffusion.jl
 
 [![Build Status](https://github.com/PTsolvers/PseudoTransientDiffusion.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/PTsolvers/PseudoTransientDiffusion.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![DOI](https://zenodo.org/badge/364610588.svg)](https://zenodo.org/badge/latestdoi/364610588)
 
 Parallel (multi-) XPU iterative 1D, 2D and 3D diffusion solvers (resolving linear, step-function and nonlinear diffusion coefficient). This software is part of the [**PTsolvers project**](https://ptsolvers.github.io/).
 
