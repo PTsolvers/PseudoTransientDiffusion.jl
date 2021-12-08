@@ -50,14 +50,16 @@ single_daint_diff   = 315.6;
 single_daint_stokes = 210.2;
 single_volta_diff   = 481.1;
 single_volta_stokes = 334.1;
+sc = 100; % to get percent
 
 FS = 20;
 mylim = [0 870];
-ylab = 790;
+mylimx = [32 550];
+ylab = 780;
 
-mylim2 = [0.959 1.003];
-mylimx = [0.8 3.e3];
-ylab2 = 0.963;
+mylim2  = [0.959 1.003].*sc;
+mylimx2 = [0.8 3.e3];
+ylab2 = 0.963*sc;
 
 fig1 = 1;
 fig2 = 1;
@@ -70,11 +72,14 @@ sp1 = subplot(121);
 %diff_2D_octo_2(1,:),T_peak_octo*ones(size(diff_2D_octo_2(1,:))), 'k--',...
 semilogx(diff_2D_volta_2(1,:),diff_2D_volta_2(end,:), '-o', ...
          diff_2D_daint_2(1,:),diff_2D_daint_2(end,:), '-o', ...
-         diff_2D_octo_2(1,:),T_peak_volta*ones(size(diff_2D_octo_2(1,:))),'k-.', ...
+         'linewidth',3, 'MarkerFaceColor','k'), set(gca, 'fontsize',FS, 'linewidth',1.4)
+hold on
+semilogx(diff_2D_octo_2(1,:),T_peak_volta*ones(size(diff_2D_octo_2(1,:))),'k-.', ...
          diff_2D_octo_2(1,:),T_peak_daint*ones(size(diff_2D_octo_2(1,:))),'k--', ...
-         'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
+         'linewidth',1.5, 'MarkerFaceColor','k')
+hold off
 title({'2D nonlinear'; 'diffusion'},'fontsize',FS-2)
- ylabel({' ';'\bf{T_{eff} [GB/s]}'}, 'fontsize',FS)
+ylabel({' ';'\bf{T_{eff} [GB/s]}'}, 'fontsize',FS)
 ylim(mylim)
 set(gca, 'XTick',diff_2D_octo_2(1,:))
 xtickangle(45)
@@ -88,20 +93,24 @@ sp2 = subplot(122);
 %diff_3D_volta_2(2,:),T_peak_octo*ones(size(diff_3D_volta_2(2,:))), 'k--',...
 semilogx(diff_3D_volta_2(2,:),diff_3D_volta_2(end,:), '-o', ...
          diff_3D_daint_2(2,:),diff_3D_daint_2(end,:), '-o', ...
-         diff_3D_volta_2(2,:),T_peak_volta*ones(size(diff_3D_volta_2(2,:))),'k-.', ...
+         'linewidth',3, 'MarkerFaceColor','k'), set(gca, 'fontsize',FS, 'linewidth',1.4)
+hold on
+semilogx(diff_3D_volta_2(2,:),T_peak_volta*ones(size(diff_3D_volta_2(2,:))),'k-.', ...
          diff_3D_volta_2(2,:),T_peak_daint*ones(size(diff_3D_volta_2(2,:))),'k--', ...
-     'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
+         'linewidth',1.5, 'MarkerFaceColor','k')
+hold off
 title({'3D nonlinear'; 'diffusion'},'fontsize',FS-2)
 lg=legend('Tesla V100 SXM2', 'Tesla P100 PCIe'); set(lg,'box','off')
 ylim(mylim)
+xlim(mylimx)
 set(gca, 'XTick',diff_3D_volta_2(2,:), 'YTicklabel',[])
 xtickangle(45)
 set(gca,'fontname','Courier')
 xlabel('\bf{nx}', 'fontsize',FS)
 text(33,ylab,'(b)','fontsize',FS+2,'fontname','Courier')
 
-pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*0.97  pos1(2)*1.15 pos1(3)*1 pos1(4)*1])
-pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.97  pos2(2)*1.15 pos2(3)*1 pos2(4)*1])
+pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*0.97  pos1(2)*2 pos1(3)*1.12 pos1(4)*0.8])
+pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.97  pos2(2)*2 pos2(3)*1.12 pos2(4)*0.8])
 fig = gcf;
 fig.PaperPositionMode = 'auto';
 % print('fig_perf23D_diff_2','-dpng','-r300')
@@ -112,14 +121,14 @@ if fig2==1
 figure(2),clf,set(gcf,'color','white','pos',[1400 10 800 400])
 sp1 = subplot(121);
 % diff_3D_mxpu_octo_2(1,:),diff_3D_mxpu_octo_2(end,:)./diff_3D_mxpu_octo_2(end,1), '-o', ...
-semilogx(diff_3D_mxpu_volta_2(1,:),diff_3D_mxpu_volta_2(end,:)./single_volta_diff, '-o', ...
-         diff_3D_mxpu_daint_2(1,:),diff_3D_mxpu_daint_2(end,:)./single_daint_diff, '-o', ...
-        'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
+semilogx(diff_3D_mxpu_volta_2(1,:),diff_3D_mxpu_volta_2(end,:)./single_volta_diff.*sc, '-o', ...
+         diff_3D_mxpu_daint_2(1,:),diff_3D_mxpu_daint_2(end,:)./single_daint_diff.*sc, '-o', ...
+        'linewidth',3, 'MarkerFaceColor','k'), set(gca, 'fontsize',FS, 'linewidth',1.4)
 title({'3D nonlinear'; 'diffusion'},'fontsize',FS-2)
-ylabel({' ';'\bf{E}'}, 'fontsize',FS)
+ylabel({' ';'\bf{E} [%]'}, 'fontsize',FS)
 % lg=legend('Titan Xm', 'Tesla V100 SXM2'); set(lg,'box','off')
 ylim(mylim2)
-xlim(mylimx)
+xlim(mylimx2)
 set(gca, 'XTick',diff_3D_mxpu_daint_2(1,:))
 xtickangle(45)
 set(gca,'fontname','Courier')
@@ -128,22 +137,22 @@ text(1.1,ylab2,'(a)','fontsize',FS+2,'fontname','Courier')
 
 sp2 = subplot(122);
 % stokes_3D_mxpu_octo_2(1,:),stokes_3D_mxpu_octo_2(end,:)./stokes_3D_mxpu_octo_2(end,1), '-o', ...
-semilogx(stokes_3D_mxpu_volta_2(1,:),stokes_3D_mxpu_volta_2(end,:)./single_volta_stokes, '-o', ...
-         stokes_3D_mxpu_daint_2(1,:),stokes_3D_mxpu_daint_2(end,:)./single_daint_stokes, '-o', ...
-     'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
+semilogx(stokes_3D_mxpu_volta_2(1,:),stokes_3D_mxpu_volta_2(end,:)./single_volta_stokes.*sc, '-o', ...
+         stokes_3D_mxpu_daint_2(1,:),stokes_3D_mxpu_daint_2(end,:)./single_daint_stokes.*sc, '-o', ...
+     'linewidth',3, 'MarkerFaceColor','k'),set(gca, 'fontsize',FS, 'linewidth',1.4)
 title({'3D visco-elastic'; 'Stokes'},'fontsize',FS-2)
 % ylabel({' ';'\bf{E}'}, 'fontsize',FS)
 lg=legend('Tesla V100 SXM2', 'Tesla P100 PCIe'); set(lg,'box','off')
 ylim(mylim2)
-xlim(mylimx)
+xlim(mylimx2)
 set(gca, 'XTick',stokes_3D_mxpu_daint_2(1,:), 'YTicklabel',[])
 xtickangle(45)
 set(gca,'fontname','Courier')
 xlabel('\bf{P (GPUs)}', 'fontsize',FS)
 text(1.1,ylab2,'(b)','fontsize',FS+2,'fontname','Courier')
 
-pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*1.04  pos1(2)*1.2 pos1(3)*1 pos1(4)*1])
-pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.96  pos2(2)*1.2 pos2(3)*1 pos2(4)*1])
+pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*1.04  pos1(2)*2 pos1(3)*1.1 pos1(4)*0.8])
+pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.96  pos2(2)*2 pos2(3)*1.1 pos2(4)*0.8])
 
 fig = gcf;
 fig.PaperPositionMode = 'auto';

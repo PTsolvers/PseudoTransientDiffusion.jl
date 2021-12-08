@@ -29,7 +29,7 @@ st = 2;
 semilogx(diff_1D_lin(1,st:end), diff_1D_lin(2,st:end)./diff_1D_lin(1,st:end)./diff_1D_lin(3,st:end),'-o', ...
          diff_2D_lin(1,st:end), diff_2D_lin(3,st:end)./diff_2D_lin(1,st:end)./diff_2D_lin(4,st:end),'-o', ...
          diff_3D_lin(1,1:end),  diff_3D_lin(4,1:end)./ diff_3D_lin(1,1:end)./ diff_3D_lin(5,1:end),'-o', ...
-         'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
+         'linewidth',3, 'MarkerFaceColor','k'), set(gca, 'fontsize',FS, 'linewidth',1.4)
 ylabel({' ';'\bf{iter_{tot}/nt/nx}'}, 'fontsize',FS)
 ylim(mylim)
 % lg=legend('1D', '2D', '3D'); set(lg,'box','off')
@@ -45,7 +45,7 @@ st = 2;
 semilogx(diff_1D_linstep(1,st:end), diff_1D_linstep(2,st:end)./diff_1D_linstep(1,st:end)./diff_1D_linstep(3,st:end),'-o', ...
          diff_2D_linstep(1,st:end), diff_2D_linstep(3,st:end)./diff_2D_linstep(1,st:end)./diff_2D_linstep(4,st:end),'-o', ...
          diff_3D_linstep(1,1:end),  diff_3D_linstep(4,1:end)./diff_3D_linstep(1,1:end)./diff_3D_linstep(5,1:end),'-o', ...
-         'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
+         'linewidth',3, 'MarkerFaceColor','k'), set(gca, 'fontsize',FS, 'linewidth',1.4)
 title({'linear step'; 'diffusion'})
 ylim(mylim)
 set(gca, 'XTick',diff_1D_linstep(1,st:end),'YTicklabel',[])
@@ -59,7 +59,7 @@ st = 2;
 semilogx(diff_1D_nonlin(1,st:end), diff_1D_nonlin(2,st:end)./diff_1D_nonlin(1,st:end)./diff_1D_nonlin(3,st:end),'-o', ...
          diff_2D_nonlin(1,st:end), diff_2D_nonlin(3,st:end)./diff_2D_nonlin(1,st:end)./diff_2D_nonlin(4,st:end),'-o', ...
          diff_3D_nonlin(1,1:end), diff_3D_nonlin(4,1:end)./diff_3D_nonlin(1,1:end)./diff_3D_nonlin(5,1:end),'-o', ...
-         'linewidth',3, 'MarkerFaceColor','k'), axis square, set(gca, 'fontsize',FS, 'linewidth',1.4)
+         'linewidth',3, 'MarkerFaceColor','k'), set(gca, 'fontsize',FS, 'linewidth',1.4)
 lg=legend('1D', '2D', '3D'); set(lg,'box','off')
 title({'nonlinear'; 'diffusion'})
 ylim(mylim)
@@ -69,9 +69,9 @@ xlabel('\bf{nx}', 'fontsize',FS)
 set(gca,'fontname','Courier')
 text(75,ylab,'(c)','fontsize',FS+2,'fontname','Courier')
 
-pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*0.9   pos1(2) pos1(3)*1.1 pos1(4)*1.1])
-pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.97  pos2(2) pos2(3)*1.1 pos2(4)*1.1])
-pos3 = get(sp3,'position'); set(sp3,'position',[pos3(1)*0.985 pos3(2) pos3(3)*1.1 pos3(4)*1.1])
+pos1 = get(sp1,'position'); set(sp1,'position',[pos1(1)*0.8   pos1(2)*2.1 pos1(3)*1.2 pos1(4)*0.75])
+pos2 = get(sp2,'position'); set(sp2,'position',[pos2(1)*0.97  pos2(2)*2.1 pos2(3)*1.2 pos2(4)*0.75])
+pos3 = get(sp3,'position'); set(sp3,'position',[pos3(1)*1     pos3(2)*2.1 pos3(3)*1.2 pos3(4)*0.75])
 fig = gcf;
 fig.PaperPositionMode = 'auto';
 % print('fig_scale123D','-dpng','-r300')
