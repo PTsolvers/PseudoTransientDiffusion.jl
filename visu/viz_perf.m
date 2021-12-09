@@ -125,7 +125,8 @@ semilogx(diff_3D_mxpu_volta_2(1,:),diff_3D_mxpu_volta_2(end,:)./single_volta_dif
          diff_3D_mxpu_daint_2(1,:),diff_3D_mxpu_daint_2(end,:)./single_daint_diff.*sc, '-o', ...
         'linewidth',3, 'MarkerFaceColor','k'), set(gca, 'fontsize',FS, 'linewidth',1.4)
 title({'3D nonlinear'; 'diffusion'},'fontsize',FS-2)
-ylabel({' ';'\bf{E} [%]'}, 'fontsize',FS)
+ylabel({' ';'\bf{E}'}, 'fontsize',FS)
+ytickformat('%g\%')
 % lg=legend('Titan Xm', 'Tesla V100 SXM2'); set(lg,'box','off')
 ylim(mylim2)
 xlim(mylimx2)
