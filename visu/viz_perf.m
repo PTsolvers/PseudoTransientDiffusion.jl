@@ -118,7 +118,7 @@ semilogx(diff_3D_volta_2(2,:),T_peak_ampere*ones(size(diff_3D_volta_2(2,:))),'k:
          'linewidth',1.5, 'MarkerFaceColor','k')
 hold off
 title({'3D nonlinear'; 'diffusion'},'fontsize',FS-2)
-lg=legend('Tesla A100 SXM2', 'Tesla V100 SXM2', 'Tesla P100 PCIe'); set(lg,'box','off')
+lg=legend('Tesla A100 SXM4', 'Tesla V100 SXM2', 'Tesla P100 PCIe'); set(lg,'box','off')
 ylim(mylim)
 xlim(mylimx)
 set(gca, 'XTick',diff_3D_volta_2(2,:), 'YTicklabel',[])
@@ -163,7 +163,7 @@ semilogx(stokes_3D_mxpu_ampere_2(1,:),stokes_3D_mxpu_ampere_2(end,:)./single_amp
      'linewidth',3, 'MarkerFaceColor','k'),set(gca, 'fontsize',FS, 'linewidth',1.4)
 title({'3D visco-elastic'; 'Stokes'},'fontsize',FS-2)
 % ylabel({' ';'\bf{E}'}, 'fontsize',FS)
-lg=legend('Tesla A100 SXM2', 'Tesla V100 SXM2', 'Tesla P100 PCIe'); set(lg,'box','off')
+lg=legend('Tesla A100 SXM4', 'Tesla V100 SXM2', 'Tesla P100 PCIe'); set(lg,'box','off')
 ylim(mylim2)
 xlim(mylimx2)
 set(gca, 'XTick',stokes_3D_mxpu_daint_2(1,:), 'YTicklabel',[])
