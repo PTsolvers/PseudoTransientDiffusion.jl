@@ -77,7 +77,6 @@ end
     nout       = 10               # tol check
     CFL        = 1/sqrt(3)        # CFL number
     me, dims   = init_global_grid(nx, ny, nz) # MPI initialisation
-    @static if USE_GPU select_device() end    # select one GPU per MPI local rank (if >1 GPU per node)
     b_width    = (8, 4, 4)       # boundary width for comm/comp overlap
     # Derived numerics    
     dx, dy, dz = lx/nx_g(), ly/ny_g(), lz/nz_g() # cell sizes
