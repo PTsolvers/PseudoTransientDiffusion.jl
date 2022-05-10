@@ -138,7 +138,7 @@ end
     if (me==0) @printf("Total time = %1.2f, time steps = %d, nx = %d, iterations tot = %d \n", round(ttot, sigdigits=2), it, nx_g(), ittot) end
     # Visualise
     if do_viz || do_save_viz
-        H_inn .= inn(H); gather!(H_inn, H_v)
+        H_inn .= Array(inn(H)); gather!(H_inn, H_v)
         if me==0 && do_viz
             heatmap(Xi_g, Yi_g, H_v[:,:,z_sl]', dpi=150, aspect_ratio=1, framestyle=:box, xlims=(Xi_g[1],Xi_g[end]), ylims=(Yi_g[1],Yi_g[end]), xlabel="lx", ylabel="ly", c=:viridis, clims=(0,1), title="nonlinear diffusion (nt=$it, iters=$ittot)")
             savefig("../../figures/diff_3D_nonlin_multixpu_perf_$(nx_g()).png")
