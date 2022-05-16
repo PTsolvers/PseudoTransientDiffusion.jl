@@ -1,7 +1,7 @@
 name = "PseudoTransientDiffusion"
 uuid = "b5b0327e-567e-4ee6-9713-fc28d852c7ee"
 authors = ["Ludovic Raess <ludovic.rass@gmail.com>, Ivan Utkin and contributors"]
-version = "1.0.0"
+version = "0.1.0"
 
 [deps]
 BSON = "fbb218c0-5317-5bc6-957e-2ee96dd4b1f0"
