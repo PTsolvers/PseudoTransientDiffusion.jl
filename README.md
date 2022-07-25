@@ -9,15 +9,16 @@ The aim of this project is to provide iterative solvers **assessing the scalabil
 
 This repository, together with [**PseudoTransientStokes.jl**](https://github.com/PTsolvers/PseudoTransientStokes.jl/), relates to the original research article draft submitted to the _**Geoscientific Model Development**_ journal:
 ```tex
-@Article{raess2022,
+@Article{gmd-15-5757-2022,
     AUTHOR = {R\"ass, L. and Utkin, I. and Duretz, T. and Omlin, S. and Podladchikov, Y. Y.},
-    TITLE = {Assessing the robustness and scalability of the accelerated pseudo-transient method towards exascale computing},
-    JOURNAL = {Geoscientific Model Development Discussions},
-    VOLUME = {2022},
+    TITLE = {Assessing the robustness and scalability of the accelerated pseudo-transient method},
+    JOURNAL = {Geoscientific Model Development},
+    VOLUME = {15},
     YEAR = {2022},
-    PAGES = {1--46},
-    URL = {https://gmd.copernicus.org/preprints/gmd-2021-411/},
-    DOI = {10.5194/gmd-2021-411}
+    NUMBER = {14},
+    PAGES = {5757--5786},
+    URL = {https://gmd.copernicus.org/articles/15/5757/2022/},
+    DOI = {10.5194/gmd-15-5757-2022}
 }
 ```
 
